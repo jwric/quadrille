@@ -1217,6 +1217,7 @@ checksum = "dfa686283ad6dd069f105e5ab091b04c62850d3e4cf5d67debad1933f55023df"
 [[package]]
 name = "iced"
 version = "0.14.0"
+source = "git+https://github.com/jwric/iced?branch=0.14-pixel-scale#ab6fa7c1a02943afa7781d15149500fd085b4257"
 dependencies = [
  "iced_core",
  "iced_debug",
@@ -1232,6 +1233,7 @@ dependencies = [
 [[package]]
 name = "iced_core"
 version = "0.14.0"
+source = "git+https://github.com/jwric/iced?branch=0.14-pixel-scale#ab6fa7c1a02943afa7781d15149500fd085b4257"
 dependencies = [
  "bitflags 2.13.2",
  "bytes",
@@ -1248,6 +1250,7 @@ dependencies = [
 [[package]]
 name = "iced_debug"
 version = "0.14.0"
+source = "git+https://github.com/jwric/iced?branch=0.14-pixel-scale#ab6fa7c1a02943afa7781d15149500fd085b4257"
 dependencies = [
  "iced_core",
  "iced_futures",
@@ -1257,6 +1260,7 @@ dependencies = [
 [[package]]
 name = "iced_futures"
 version = "0.14.0"
+source = "git+https://github.com/jwric/iced?branch=0.14-pixel-scale#ab6fa7c1a02943afa7781d15149500fd085b4257"
 dependencies = [
  "futures",
  "iced_core",
@@ -1270,6 +1274,7 @@ dependencies = [
 [[package]]
 name = "iced_graphics"
 version = "0.14.0"
+source = "git+https://github.com/jwric/iced?branch=0.14-pixel-scale#ab6fa7c1a02943afa7781d15149500fd085b4257"
 dependencies = [
  "bitflags 2.13.2",
  "bytemuck",
@@ -1290,6 +1295,7 @@ dependencies = [
 [[package]]
 name = "iced_program"
 version = "0.14.0"
+source = "git+https://github.com/jwric/iced?branch=0.14-pixel-scale#ab6fa7c1a02943afa7781d15149500fd085b4257"
 dependencies = [
  "iced_graphics",
  "iced_runtime",
@@ -1298,6 +1304,7 @@ dependencies = [
 [[package]]
 name = "iced_renderer"
 version = "0.14.0"
+source = "git+https://github.com/jwric/iced?branch=0.14-pixel-scale#ab6fa7c1a02943afa7781d15149500fd085b4257"
 dependencies = [
  "iced_graphics",
  "iced_tiny_skia",
@@ -1309,6 +1316,7 @@ dependencies = [
 [[package]]
 name = "iced_runtime"
 version = "0.14.0"
+source = "git+https://github.com/jwric/iced?branch=0.14-pixel-scale#ab6fa7c1a02943afa7781d15149500fd085b4257"
 dependencies = [
  "bytes",
  "iced_core",
@@ -1320,6 +1328,7 @@ dependencies = [
 [[package]]
 name = "iced_selector"
 version = "0.14.0"
+source = "git+https://github.com/jwric/iced?branch=0.14-pixel-scale#ab6fa7c1a02943afa7781d15149500fd085b4257"
 dependencies = [
  "iced_core",
 ]
@@ -1327,6 +1336,7 @@ dependencies = [
 [[package]]
 name = "iced_test"
 version = "0.14.0"
+source = "git+https://github.com/jwric/iced?branch=0.14-pixel-scale#ab6fa7c1a02943afa7781d15149500fd085b4257"
 dependencies = [
  "iced_futures",
  "iced_program",
@@ -1342,6 +1352,7 @@ dependencies = [
 [[package]]
 name = "iced_tiny_skia"
 version = "0.14.0"
+source = "git+https://github.com/jwric/iced?branch=0.14-pixel-scale#ab6fa7c1a02943afa7781d15149500fd085b4257"
 dependencies = [
  "bytemuck",
  "cosmic-text",
@@ -1357,6 +1368,7 @@ dependencies = [
 [[package]]
 name = "iced_wgpu"
 version = "0.14.0"
+source = "git+https://github.com/jwric/iced?branch=0.14-pixel-scale#ab6fa7c1a02943afa7781d15149500fd085b4257"
 dependencies = [
  "bitflags 2.13.2",
  "bytemuck",
@@ -1376,6 +1388,7 @@ dependencies = [
 [[package]]
 name = "iced_widget"
 version = "0.14.2"
+source = "git+https://github.com/jwric/iced?branch=0.14-pixel-scale#ab6fa7c1a02943afa7781d15149500fd085b4257"
 dependencies = [
  "iced_renderer",
  "log",
@@ -1388,6 +1401,7 @@ dependencies = [
 [[package]]
 name = "iced_winit"
 version = "0.14.0"
+source = "git+https://github.com/jwric/iced?branch=0.14-pixel-scale#ab6fa7c1a02943afa7781d15149500fd085b4257"
 dependencies = [
  "iced_debug",
  "iced_program",
