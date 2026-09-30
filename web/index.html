@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+        <title>graticule</title>
+        <style>
+            html,
+            body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                overflow: hidden;
+                overscroll-behavior: none;
+                background: #1a1a1a;
+            }
+
+            /* The renderer owns the drawing buffer and its device-pixel ratio;
+               the page only sizes the box the canvas fills. */
+            canvas {
+                display: block;
+                width: 100% !important;
+                height: 100% !important;
+                outline: none;
+                touch-action: none;
+                image-rendering: pixelated;
+            }
+
+            #boot-status,
+            #boot-error {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                font: 13px monospace;
+                text-align: center;
+                white-space: pre-wrap;
+            }
+
+            #boot-status {
+                color: #ffa133;
+            }
+
+            #boot-error {
+                display: none;
+                max-width: 80%;
+                color: #e8553e;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="boot-status">G R A T I C U L E</div>
+        <div id="boot-error"></div>
+        <script type="module">
+            // winit focuses its canvas before iced attaches it; focus it again
+            // once it is in the document so keys reach the console at once.
+            new MutationObserver((mutations, observer) => {
+                for (const mutation of mutations) {
+                    for (const node of mutation.addedNodes) {
+                        if (node.nodeName === "CANVAS") {
+                            node.focus({ preventScroll: true });
+                            document.getElementById("boot-status").style.display = "none";
+                            observer.disconnect();
+                            return;
+                        }
+                    }
+                }
+            }).observe(document.body, { childList: true, subtree: true });
+
+            // F1 to F6 are the console's soft keys, not the browser's.
+            window.addEventListener(
+                "keydown",
+                (event) => {
+                    if (/^F[1-6]$/.test(event.key) && !event.ctrlKey && !event.altKey && !event.metaKey) {
+                        event.preventDefault();
+                    }
+                },
+                { capture: true },
+            );
+
+            try {
+                const { default: init } = await import("./pkg/graticule_demo.js");
+                await init();
+            } catch (error) {
+                console.error(error);
+                const output = document.getElementById("boot-error");
+                output.textContent = "graticule failed to start\n\n" + (error && error.message);
+                output.style.display = "block";
+                document.getElementById("boot-status").style.display = "none";
+            }
+        </script>
+    </body>
+</html>

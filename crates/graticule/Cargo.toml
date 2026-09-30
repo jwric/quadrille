@@ -1,0 +1,22 @@
+[package]
+name = "graticule"
+version = "0.1.0"
+description = "A pixel-perfect retro UI toolkit for iced: instrument panels, schematics and pixel type."
+keywords = ["iced", "gui", "pixel-art", "retro", "widgets"]
+categories = ["gui"]
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+include = ["src/**", "fonts/**", "README.md"]
+
+[dependencies]
+# The widget layer alone: renderers, windowing and executors are the
+# application's choice. `image` is for rasters built from RGBA.
+iced_widget = { workspace = true, features = ["advanced", "canvas", "crisp", "image"] }
+
+[dev-dependencies]
+iced = { workspace = true, features = ["tiny-skia", "thread-pool", "x11", "wayland"] }
+iced_test.workspace = true
+# Reads a snapshot's pixels back: iced_test compares snapshots with files but
+# never hands their pixels out. The version iced_test decodes with.
+png = "0.18"

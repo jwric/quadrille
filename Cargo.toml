@@ -1,0 +1,44 @@
+[workspace]
+resolver = "3"
+members = ["crates/graticule", "demo"]
+
+[workspace.package]
+edition = "2024"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/jwric/graticule"
+
+[workspace.dependencies]
+graticule = { path = "crates/graticule" }
+
+# The pixel-scale iced fork: the interface is laid out in virtual pixels and
+# upscaled nearest-neighbour, and `crisp` snaps quads, text and one-pixel
+# strokes to the grid. Switch to the path patch below when working on the fork
+# itself.
+[workspace.dependencies.iced]
+git = "https://github.com/jwric/iced"
+branch = "0.14-pixel-scale"
+default-features = false
+
+[workspace.dependencies.iced_widget]
+git = "https://github.com/jwric/iced"
+branch = "0.14-pixel-scale"
+
+[workspace.dependencies.iced_test]
+git = "https://github.com/jwric/iced"
+branch = "0.14-pixel-scale"
+
+# The fork's `graticule` branch carries fixes the toolkit needs that are not
+# on `0.14-pixel-scale` yet (see DESIGN.md § 9). It is a local worktree until
+# the branch is pushed.
+[patch.'https://github.com/jwric/iced']
+iced = { path = "../iced/.claude/worktrees/graticule" }
+iced_widget = { path = "../iced/.claude/worktrees/graticule/widget" }
+iced_test = { path = "../iced/.claude/worktrees/graticule/test" }
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+
+[profile.release-web]
+inherits = "release"
+opt-level = "s"
