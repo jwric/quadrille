@@ -11,6 +11,9 @@ fn panel<'a>() -> Element<'a, ()> {
         "PANEL",
         column![
             label("LABEL 0123 °C"),
+            // Departure Mono has no `ƀ`. It must be drawn as the face's own
+            // missing glyph, not borrowed from a smooth system font.
+            label("MISSING ƀ"),
             bar(0.0..=1.0, 0.6).width(80.0),
             bar(0.0..=1.0, 0.6).segments(3).redline(0.5).width(80.0),
             indicator("LAMP", true),
