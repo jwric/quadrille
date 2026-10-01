@@ -121,7 +121,7 @@ impl Scope {
         ]
         .width(264.0);
 
-        let field = Field::of(telemetry);
+        let field = Field::scanned(telemetry.elapsed);
 
         let right = column![
             trend::trend(telemetry.elapsed, MINUTE, 22.0..=30.0, "V")

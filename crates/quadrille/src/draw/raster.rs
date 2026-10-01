@@ -48,6 +48,37 @@ impl Raster {
         }
     }
 
+    /// A raster `width` × `height` pixels in a few colours: each pixel the
+    /// one of `colors` that `index` picks for its column and row.
+    ///
+    /// Each colour is turned into bytes once rather than once a pixel, which
+    /// is the cheaper way to set a picture drawn from a palette's steps.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `index` picks a colour `colors` does not have.
+    pub fn indexed(
+        width: u32,
+        height: u32,
+        colors: &[Color],
+        mut index: impl FnMut(u32, u32) -> usize,
+    ) -> Self {
+        let colors: Vec<[u8; 4]> = colors.iter().map(|color| rgba(*color)).collect();
+        let mut pixels = Vec::with_capacity(width as usize * height as usize * 4);
+
+        for y in 0..height {
+            for x in 0..width {
+                pixels.extend_from_slice(&colors[index(x, y)]);
+            }
+        }
+
+        Self {
+            width,
+            height,
+            pixels,
+        }
+    }
+
     /// Its width.
     pub fn width(&self) -> u32 {
         self.width
@@ -139,6 +170,17 @@ mod tests {
         assert_eq!(raster.get(2, 1), Some(white));
         assert_eq!(raster.get(1, 1), Some(black));
         assert_eq!(raster.get(3, 0), None);
+    }
+
+    #[test]
+    fn an_indexed_raster_is_the_raster_of_its_colours() {
+        let colors = [rgb(10, 20, 30), rgb(200, 100, 0)];
+        let pick = |x: u32, y: u32| ((x + y) % 2) as usize;
+
+        assert_eq!(
+            Raster::indexed(5, 3, &colors, pick),
+            Raster::from_fn(5, 3, |x, y| colors[pick(x, y)]),
+        );
     }
 
     #[test]

@@ -22,6 +22,14 @@ use crate::Telemetry;
 /// The temperatures the ramp spans, in °C.
 pub const RANGE: RangeInclusive<f32> = -150.0..=150.0;
 
+/// The seconds between two scans of the skin.
+///
+/// Temperatures change slowly, so the map and its readings follow a sensor
+/// that scans the skin twice a second rather than the clock's every tick: the
+/// picture is worked out again, and handed to the renderer again, only when a
+/// scan comes in.
+pub const SCAN: f32 = 0.5;
+
 /// The width of the gutter left of the map, which holds `FWD` and `AFT`.
 pub const GUTTER: u16 = 22;
 
@@ -56,29 +64,48 @@ impl Field {
         }
     }
 
+    /// The skin as the last scan before `elapsed` seconds found it.
+    pub fn scanned(elapsed: f32) -> Self {
+        Self::of(&Telemetry::at((elapsed / SCAN).floor() * SCAN))
+    }
+
     /// The temperature at `bearing` degrees round the hull and `station`,
     /// from 0 at the nose to 1 at the engine.
     pub fn at(&self, bearing: f32, station: f32) -> f32 {
-        let off = |a: f32, b: f32| {
-            let d = (a - b).rem_euclid(360.0);
+        self.sum(self.bearing(bearing), self.station(station))
+    }
 
-            d.min(360.0 - d)
+    /// The terms of the temperature that vary with the bearing alone.
+    fn bearing(&self, bearing: f32) -> Bearing {
+        let lit = ((bearing - self.sun) / 360.0 * TAU).cos().max(0.0);
+
+        Bearing {
+            sun: 160.0 * lit,
+            bay: 45.0 * (-(apart(bearing, BAY.0) / 26.0).powi(2)).exp(),
+            radiator: RADIATORS
+                .iter()
+                .any(|centre| apart(bearing, *centre) < 14.0),
+        }
+    }
+
+    /// The terms of the temperature that vary with the station alone.
+    fn station(&self, station: f32) -> Station {
+        Station {
+            engine: 140.0 * self.thrust * (-(1.0 - station) / 0.14).exp(),
+            bay: (-((station - BAY.1) / 0.12).powi(2)).exp(),
+            panel: (PANEL.0..=PANEL.1).contains(&station),
+        }
+    }
+
+    /// The temperature where `bearing` and `station` cross.
+    fn sum(&self, bearing: Bearing, station: Station) -> f32 {
+        let radiator = if bearing.radiator && station.panel {
+            -35.0
+        } else {
+            0.0
         };
 
-        let lit = ((bearing - self.sun) / 360.0 * TAU).cos().max(0.0);
-        let sun = 160.0 * lit;
-        let engine = 140.0 * self.thrust * (-(1.0 - station) / 0.14).exp();
-        let bay = 45.0
-            * (-(off(bearing, BAY.0) / 26.0).powi(2)).exp()
-            * (-((station - BAY.1) / 0.12).powi(2)).exp();
-        let radiator = RADIATORS
-            .iter()
-            .any(|centre| off(bearing, *centre) < 14.0)
-            .then_some(-35.0)
-            .filter(|_| (PANEL.0..=PANEL.1).contains(&station))
-            .unwrap_or(0.0);
-
-        self.shade + sun + engine + bay + radiator
+        self.shade + bearing.sun + station.engine + bearing.bay * station.bay + radiator
     }
 
     /// The temperature at the middle of the equipment bay.
@@ -128,6 +155,29 @@ impl Field {
         survey.mean /= (BEARINGS * STATIONS) as f32;
         survey
     }
+}
+
+/// What a [`Field`] is at one bearing, whatever the station.
+#[derive(Debug, Clone, Copy)]
+struct Bearing {
+    sun: f32,
+    bay: f32,
+    radiator: bool,
+}
+
+/// What a [`Field`] is at one station, whatever the bearing.
+#[derive(Debug, Clone, Copy)]
+struct Station {
+    engine: f32,
+    bay: f32,
+    panel: bool,
+}
+
+/// The angle between two bearings, the short way round.
+fn apart(a: f32, b: f32) -> f32 {
+    let d = (a - b).rem_euclid(360.0);
+
+    d.min(360.0 - d)
 }
 
 /// A [`Field`] summed up.
@@ -197,6 +247,9 @@ impl Plan {
 impl Thermal {
     /// The picture: a pixel for each bearing and station, dithered between
     /// the two steps its temperature falls between.
+    ///
+    /// Each term of the temperature varies along one axis, so the terms are
+    /// worked out once a column and once a row, and a pixel only adds them.
     fn picture(&self, plan: &Plan, ramp: &Ramp) -> Raster {
         let inside = plan.inside();
         let (low, high) = (*RANGE.start(), *RANGE.end());
@@ -204,17 +257,23 @@ impl Thermal {
         let steps = ramp.steps();
         let last = steps.len() - 1;
 
-        Raster::from_fn(width, height, |x, y| {
-            let bearing = 360.0 * (x as f32 + 0.5) / width as f32;
-            let station = (y as f32 + 0.5) / height as f32;
-            let level = ((self.field.at(bearing, station) - low) / (high - low)).clamp(0.0, 1.0);
+        let bearings: Vec<Bearing> = (0..width)
+            .map(|x| self.field.bearing(360.0 * (x as f32 + 0.5) / width as f32))
+            .collect();
+        let stations: Vec<Station> = (0..height)
+            .map(|y| self.field.station((y as f32 + 0.5) / height as f32))
+            .collect();
+
+        Raster::indexed(width, height, steps, |x, y| {
+            let temperature = self.field.sum(bearings[x as usize], stations[y as usize]);
+            let level = ((temperature - low) / (high - low)).clamp(0.0, 1.0);
 
             let position = level * last as f32;
             let below = position.floor();
             let share = ((position - below) * 16.0).round() as u8;
             let up = Pattern::Bayer(share).lights(x as i32, y as i32);
 
-            steps[(below as usize + usize::from(up)).min(last)]
+            (below as usize + usize::from(up)).min(last)
         })
     }
 
@@ -336,23 +395,30 @@ impl Thermal {
         }
     }
 
-    /// The sun's bearing, marked above the frame.
+    /// The sun's bearing, marked above the frame: a pointer, and its name
+    /// centred over it where the frame is wide enough to hold the name.
     fn sun(&self, pen: &mut Pen<'_, Renderer>, plan: &Plan, palette: &Palette) {
         let face = Face::BODY;
+        let frame = plan.frame;
         let x = plan.column(self.field.sun);
-        let top = plan.frame.y - 1;
+        let top = frame.y - 1;
         let label = "SUN";
-        let half = i32::from(face.width(label)).div_euclid(2);
-        let left = (x - half).clamp(plan.frame.x, plan.frame.x + plan.frame.width - 2 * half);
 
         pen.arrowhead(Point::new(x, top), Direction::Down, 2, palette.accent);
-        pen.text(
-            face,
-            label,
-            Point::new(left, top - 3),
-            Anchor::new(Horizontal::Left, Vertical::Baseline),
-            palette.accent,
-        );
+
+        let width = i32::from(face.width(label));
+
+        if let [Some(left)] =
+            scale::place(&[(x, width)], frame.x..=frame.x + frame.width - 1, 0)[..]
+        {
+            pen.text(
+                face,
+                label,
+                Point::new(left, top - 3),
+                Anchor::new(Horizontal::Left, Vertical::Baseline),
+                palette.accent,
+            );
+        }
     }
 }
 
@@ -449,6 +515,13 @@ mod tests {
 
         // Opposite the equipment bay, so that only the engine differs.
         assert!(field.at(20.0, 1.0) > field.at(20.0, 0.5) + 100.0);
+    }
+
+    #[test]
+    fn the_skin_changes_only_when_a_scan_comes_in() {
+        assert_eq!(Field::scanned(42.0), Field::scanned(42.0 + 0.9 * SCAN));
+        assert_ne!(Field::scanned(42.0), Field::scanned(42.0 + SCAN));
+        assert_eq!(Field::scanned(42.0), Field::of(&Telemetry::at(42.0)));
     }
 
     #[test]
