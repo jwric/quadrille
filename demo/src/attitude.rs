@@ -1,9 +1,9 @@
 //! The attitude globe: a sphere of latitude and longitude lines turned by the
 //! craft's roll, pitch and heading, under a fixed reticle.
-use graticule::draw::{Anchor, Direction, Pen, rectangle, shape};
-use graticule::{Face, Theme, face};
 use iced::widget::canvas::{self, Frame, Geometry};
 use iced::{Point, Rectangle, Renderer, mouse};
+use quadrille::draw::{Anchor, Direction, Pen, rectangle, shape};
+use quadrille::{Face, Theme, face};
 
 use crate::Telemetry;
 

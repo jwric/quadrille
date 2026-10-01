@@ -1,14 +1,14 @@
 //! Renders every page of the showcase in every theme to PNG, headless.
 //!
 //! ```sh
-//! cargo run -p graticule-demo --example render -- target/render
+//! cargo run -p quadrille-demo --example render -- target/render
 //! ```
 //!
 //! The images are virtual-pixel frames: one pixel per virtual pixel, the
 //! picture the display upscales.
-use graticule::Theme;
-use graticule_demo::{App, Page, VIEWPORT, settings};
 use iced_test::Simulator;
+use quadrille::Theme;
+use quadrille_demo::{App, Page, VIEWPORT, settings};
 
 fn main() {
     let directory = std::env::args()
@@ -60,7 +60,7 @@ fn main() {
 
 /// Renders the type lab once per candidate, and its ladder.
 fn lab(directory: &str, elapsed: f32) {
-    use graticule_demo::{Message, lab};
+    use quadrille_demo::{Message, lab};
 
     let views = (0..lab::count())
         .map(|i| {

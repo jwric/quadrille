@@ -1,6 +1,6 @@
 //! The spacing scale and the pixel grid.
 //!
-//! Every length in a graticule interface is a whole number of virtual pixels.
+//! Every length in a quadrille interface is a whole number of virtual pixels.
 //! Spacing comes from the steps below; anything else is derived from a
 //! [`Face`](crate::Face)'s cell. The steps are `f32` so they can be handed
 //! straight to iced, but every one of them is whole.

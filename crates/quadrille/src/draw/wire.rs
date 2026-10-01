@@ -6,7 +6,7 @@ use super::{Axis, Direction, Pen, rectangle, shape};
 /// An orthogonal wire: horizontal and vertical runs between corners.
 ///
 /// ```
-/// use graticule::draw::{Axis, Wire};
+/// use quadrille::draw::{Axis, Wire};
 /// use iced::Point;
 ///
 /// let (from, to) = (Point::new(0, 0), Point::new(12, -8));

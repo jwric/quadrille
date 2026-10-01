@@ -1,4 +1,4 @@
-# graticule — design
+# quadrille — design
 
 The toolkit draws instrument panels: the screens of test equipment, avionics
 and early embedded GUIs, and the technical drawings that document them. This
@@ -28,7 +28,7 @@ fixed.
 ## 2. The grid
 
 - The fork's `PixelScaleMode::Auto(2)`: one virtual pixel is about two logical
-  pixels on every display. `graticule::settings()` sets it with the fonts and
+  pixels on every display. `quadrille::settings()` sets it with the fonts and
   antialiasing off, and tests run with the same settings.
 - Spacing steps (`px`): `HAIR` 1, `TIGHT` 2, `GAP` 4, `WIDE` 8, `FAR` 16.
   Everything else is derived from a face's cell.
@@ -125,7 +125,7 @@ shades go through `theme::mix` and `theme::dim`, which round to 8 bits.
 ## 8. Architecture
 
 ```
-crates/graticule/   the library (depends on iced_widget only)
+crates/quadrille/   the library (depends on iced_widget only)
   face, fonts       faces and the font files (OFL)
   px                spacing steps, snapping helpers
   theme, style      Theme, Palette, styles and catalogs for built-ins
@@ -142,7 +142,7 @@ web/                host page and build script for the browser
   `crisp`), so windowing, renderers and executors stay the application's
   choice. It pins the `0.15-pixel-scale` fork, which follows iced's master.
 - Widgets follow iced's catalog pattern: each has a `Style`, a `Catalog` and a
-  `StyleFn` class, implemented for the graticule `Theme`.
+  `StyleFn` class, implemented for the quadrille `Theme`.
 - Instruments are canvas programs with builder APIs, and widgets that draw
   themselves as a canvas, filling their space unless sized.
 - The demo's `render` example draws every page in every theme headless to

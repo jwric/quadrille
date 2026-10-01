@@ -2,16 +2,16 @@
 //! sheet with zones and a title block.
 use std::cell::Cell;
 
-use graticule::draw::{
-    Anchor, Axis, Chain, Dash, Direction, Field, Horizontal, Lettering, Note, Pattern, Pen,
-    Polygon, Sheet, Table, Vertical, Wire, fan, junctions, rectangle, shape,
-};
-use graticule::theme::mix;
-use graticule::widget::{field, inverse, label};
-use graticule::{Element, Face, Palette, Theme, px, style};
 use iced::widget::canvas::{Action, Cache, Event, Frame, Geometry};
 use iced::widget::{canvas, column, container, row, space, stack};
 use iced::{Alignment, Color, Length, Point, Rectangle, Renderer, Size, mouse};
+use quadrille::draw::{
+    Anchor, Axis, Chain, Dash, Direction, Field, Horizontal, Lettering, Note, Pattern, Pen,
+    Polygon, Sheet, Table, Vertical, Wire, fan, junctions, rectangle, shape,
+};
+use quadrille::theme::mix;
+use quadrille::widget::{field, inverse, label};
+use quadrille::{Element, Face, Palette, Theme, px, style};
 
 use crate::Telemetry;
 use iced::Widget as _;
@@ -1428,7 +1428,7 @@ mod tests {
 
                 for (j, b) in notes.iter().enumerate() {
                     let label = b.bounds();
-                    let leader = graticule::draw::shape::line(a.target, a.elbow);
+                    let leader = quadrille::draw::shape::line(a.target, a.elbow);
 
                     assert!(
                         i == j || !leader.iter().any(|&pixel| inside(label, pixel)),

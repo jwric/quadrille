@@ -1,3 +1,3 @@
 fn main() -> iced::Result {
-    graticule_demo::run()
+    quadrille_demo::run()
 }

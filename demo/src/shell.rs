@@ -1,8 +1,8 @@
 //! The chassis around every page: a status bar above, soft keys below.
-use graticule::widget::{self, divider, inverse, label, soft_key};
-use graticule::{Element, Face, Theme, face, px, style};
 use iced::widget::{column, container, row, space};
 use iced::{Alignment, Length};
+use quadrille::widget::{self, divider, inverse, label, soft_key};
+use quadrille::{Element, Face, Theme, face, px, style};
 
 use crate::{Message, Page, Telemetry};
 use iced::Widget as _;
@@ -37,7 +37,7 @@ fn status<'a>(page: Page, telemetry: &Telemetry) -> Element<'a, Message> {
     let link = telemetry.snr > 12.0;
 
     let bar = row![
-        inverse(label("GRATICULE")),
+        inverse(label("QUADRILLE")),
         label("MK-1 CONSOLE").style(style::text::muted),
         space::horizontal(),
         title,

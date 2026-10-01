@@ -1,12 +1,12 @@
 #!/bin/sh
-# Rebuild the fonts shipped in crates/graticule/fonts from fonts/.
+# Rebuild the fonts shipped in crates/quadrille/fonts from fonts/.
 #
 # Requires python3 with fontTools. Departure Mono ships as upstream's OTF;
 # the derived faces are compiled from BDF sources in fonts/sources.
 set -e
 cd "$(dirname "$0")/../.."
 
-out=crates/graticule/fonts
+out=crates/quadrille/fonts
 tools=tools/fonts
 
 cp fonts/departure-mono/DepartureMono-Regular.otf "$out/"

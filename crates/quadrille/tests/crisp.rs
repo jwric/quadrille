@@ -1,10 +1,10 @@
 //! Every pixel the toolkit draws is a colour of the palette: nothing is
 //! smoothed, and nothing is blended except where a style asks for a mix.
-use graticule::widget::{self, bar, checkbox, group, indicator, inverse, key, label, radio};
-use graticule::{Element, Palette, Theme, px};
 use iced::Widget as _;
 use iced::widget::column;
 use iced_test::Simulator;
+use quadrille::widget::{self, bar, checkbox, group, indicator, inverse, key, label, radio};
+use quadrille::{Element, Palette, Theme, px};
 
 fn panel<'a>() -> Element<'a, ()> {
     group(
@@ -51,7 +51,7 @@ fn roles(palette: &Palette) -> [iced::Color; 15] {
 
 /// The pixels of a snapshot, as RGBA rows.
 fn pixels(snapshot: &iced_test::simulator::Snapshot, name: &str) -> (u32, Vec<u8>) {
-    let directory = std::env::temp_dir().join(format!("graticule-crisp-{}", std::process::id()));
+    let directory = std::env::temp_dir().join(format!("quadrille-crisp-{}", std::process::id()));
     let path = directory.join(format!("{name}.png"));
 
     let _ = std::fs::remove_dir_all(&directory);
@@ -80,7 +80,7 @@ fn pixels(snapshot: &iced_test::simulator::Snapshot, name: &str) -> (u32, Vec<u8
 #[test]
 fn every_pixel_is_a_palette_colour() {
     for theme in Theme::ALL {
-        let mut ui = Simulator::with_size(graticule::settings(), (160.0, 200.0), panel());
+        let mut ui = Simulator::with_size(quadrille::settings(), (160.0, 200.0), panel());
         let snapshot = ui.snapshot(theme).expect("draw the panel");
         let (width, bytes) = pixels(&snapshot, theme.name());
 

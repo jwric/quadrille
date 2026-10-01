@@ -1,4 +1,4 @@
-//! The graticule showcase: the console of a spacecraft that does not exist.
+//! The quadrille showcase: the console of a spacecraft that does not exist.
 //!
 //! Each page shows one side of the toolkit: the HUD its instruments, the kit
 //! its widgets in every state, the lab its type.
@@ -11,11 +11,11 @@ mod scope;
 mod shell;
 mod telemetry;
 
-use graticule::{Element, Theme};
 use iced::Widget as _;
 use iced::keyboard::{self, key};
 use iced::time::{self, Duration, Instant};
 use iced::{Subscription, Task};
+use quadrille::{Element, Theme};
 
 pub use telemetry::Telemetry;
 
@@ -24,10 +24,10 @@ pub const VIEWPORT: iced::Size = iced::Size::new(640.0, 400.0);
 
 /// Runs the showcase.
 pub fn run() -> iced::Result {
-    let scale = graticule::LOGICAL_PER_VIRTUAL as f32;
+    let scale = quadrille::LOGICAL_PER_VIRTUAL as f32;
 
     iced::application(App::new, App::update, App::view)
-        .title("graticule")
+        .title("quadrille")
         .settings(settings())
         .theme(App::theme)
         .subscription(App::subscription)
@@ -38,7 +38,7 @@ pub fn run() -> iced::Result {
 /// The settings the showcase runs with: the toolkit's, plus the candidate
 /// fonts the lab compares.
 pub fn settings() -> iced::Settings {
-    let mut settings = graticule::settings();
+    let mut settings = quadrille::settings();
 
     settings
         .fonts

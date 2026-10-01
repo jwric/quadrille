@@ -1,13 +1,13 @@
-use graticule::Theme;
-use graticule::widget::{Knob, knob};
 use iced::{Event, Point, mouse};
 use iced_test::Simulator;
+use quadrille::Theme;
+use quadrille::widget::{Knob, knob};
 
 #[derive(Debug, Clone, PartialEq)]
 struct Turned(i32);
 
 fn simulate(knob: Knob<'static, Turned>) -> Simulator<'static, Turned, Theme> {
-    Simulator::with_settings(graticule::settings(), knob)
+    Simulator::with_settings(quadrille::settings(), knob)
 }
 
 fn wheel(delta: mouse::ScrollDelta) -> Event {

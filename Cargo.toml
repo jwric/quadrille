@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["crates/graticule", "demo"]
+members = ["crates/quadrille", "demo"]
 
 [workspace.package]
 edition = "2024"
@@ -8,7 +8,7 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/jwric/graticule"
 
 [workspace.dependencies]
-graticule = { path = "crates/graticule" }
+quadrille = { path = "crates/quadrille" }
 
 # The pixel-scale iced fork: the interface is laid out in virtual pixels and
 # upscaled nearest-neighbour, and `crisp` snaps quads, text and one-pixel

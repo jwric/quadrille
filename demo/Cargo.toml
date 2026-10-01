@@ -1,7 +1,7 @@
 [package]
-name = "graticule-demo"
+name = "quadrille-demo"
 version = "0.1.0"
-description = "The graticule showcase: an instrument console drawn with the toolkit."
+description = "The quadrille showcase: an instrument console drawn with the toolkit."
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
@@ -12,11 +12,11 @@ publish = false
 crate-type = ["cdylib", "rlib"]
 
 [[bin]]
-name = "graticule-demo"
+name = "quadrille-demo"
 path = "src/main.rs"
 
 [dependencies]
-graticule.workspace = true
+quadrille.workspace = true
 # The browser build gets this set: wgpu on WebGL2 only.
 iced = { workspace = true, features = ["wgpu-bare", "webgl", "canvas", "advanced", "crisp", "image-without-codecs"] }
 web-time = "1"

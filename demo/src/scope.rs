@@ -10,11 +10,11 @@
 use std::cell::OnceCell;
 use std::f64::consts::TAU;
 
-use graticule::instrument::{self, Cursors, History, engineering};
-use graticule::widget::{self, group, knob, label};
-use graticule::{Element, Theme, px, style};
 use iced::widget::{column, container, row, space};
 use iced::{Alignment, Length};
+use quadrille::instrument::{self, Cursors, History, engineering};
+use quadrille::widget::{self, group, knob, label};
+use quadrille::{Element, Theme, px, style};
 
 use crate::Telemetry;
 use iced::Widget as _;

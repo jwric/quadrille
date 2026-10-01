@@ -7,12 +7,12 @@ mod candidates;
 
 pub use candidates::FONTS;
 
-use graticule::draw::{Anchor, Horizontal, Pattern, Pen, Vertical, rectangle};
-use graticule::widget::{self, bar, group, label, selector};
-use graticule::{Element, Face, Theme, px, style};
 use iced::widget::canvas::{self, Frame, Geometry};
 use iced::widget::{button, canvas as canvas_widget, column, container, row, space};
 use iced::{Alignment, Length, Point, Rectangle, Renderer, mouse};
+use quadrille::draw::{Anchor, Horizontal, Pattern, Pen, Vertical, rectangle};
+use quadrille::widget::{self, bar, group, label, selector};
+use quadrille::{Element, Face, Theme, px, style};
 
 use crate::VIEWPORT;
 use iced::Widget as _;

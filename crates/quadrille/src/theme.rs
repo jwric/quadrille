@@ -11,7 +11,7 @@ use std::borrow::Cow;
 use iced_widget::core::Color;
 use iced_widget::core::theme::{self, Base, Mode};
 
-/// A graticule theme: a named [`Palette`].
+/// A quadrille theme: a named [`Palette`].
 #[derive(Debug, Clone, PartialEq)]
 pub struct Theme {
     name: Cow<'static, str>,

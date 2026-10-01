@@ -6,8 +6,8 @@
 //! the same pixels on every renderer.
 //!
 //! ```no_run
-//! # use graticule::draw::{Anchor, Pen};
-//! # use graticule::{Face, Theme};
+//! # use quadrille::draw::{Anchor, Pen};
+//! # use quadrille::{Face, Theme};
 //! # use iced::widget::canvas::Frame;
 //! # use iced::Point;
 //! # fn draw(frame: &mut Frame, theme: &Theme) {

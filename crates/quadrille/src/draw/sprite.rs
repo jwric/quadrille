@@ -3,7 +3,7 @@ use iced_widget::core::Rectangle;
 /// A 1-bit bitmap written as art, one string per row, `#` for a lit pixel.
 ///
 /// ```
-/// use graticule::draw::Sprite;
+/// use quadrille::draw::Sprite;
 ///
 /// const DIAMOND: Sprite = Sprite::new(&[
 ///     "..#..",

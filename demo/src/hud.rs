@@ -1,9 +1,9 @@
 //! The flight instruments.
-use graticule::instrument::{self, Marker, Side};
-use graticule::widget::{self, bar, group, indicator, label, lamp};
-use graticule::{Element, Face, px, style};
 use iced::widget::{canvas, column, container, row, space};
 use iced::{Alignment, Length};
+use quadrille::instrument::{self, Marker, Side};
+use quadrille::widget::{self, bar, group, indicator, label, lamp};
+use quadrille::{Element, Face, px, style};
 
 use crate::attitude::Attitude;
 use crate::{Message, Telemetry};
@@ -182,7 +182,7 @@ fn footer<'a>(telemetry: &Telemetry) -> Element<'a, Message> {
     let field = |name: &'a str, value: String| widget::field(name, label(value));
 
     row![
-        widget::inverse(label("GRATICULE")),
+        widget::inverse(label("QUADRILLE")),
         field("MODE", "AUTO".to_owned()),
         field("ORBIT", format!("{:05.1} KM", telemetry.altitude)),
         field("INCLINATION", "51.64°".to_owned()),

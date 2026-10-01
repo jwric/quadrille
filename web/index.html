@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-        <title>graticule</title>
+        <title>quadrille</title>
         <style>
             html,
             body {
@@ -79,12 +79,12 @@
             );
 
             try {
-                const { default: init } = await import("./pkg/graticule_demo.js");
+                const { default: init } = await import("./pkg/quadrille_demo.js");
                 await init();
             } catch (error) {
                 console.error(error);
                 const output = document.getElementById("boot-error");
-                output.textContent = "graticule failed to start\n\n" + (error && error.message);
+                output.textContent = "quadrille failed to start\n\n" + (error && error.message);
                 output.style.display = "block";
                 document.getElementById("boot-status").style.display = "none";
             }

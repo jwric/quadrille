@@ -1,4 +1,4 @@
-# graticule
+# quadrille
 
 A pixel-perfect retro UI toolkit for [iced]: instrument panels, technical
 drawings and pixel type, drawn in whole virtual pixels.
@@ -19,11 +19,11 @@ out in virtual pixels and upscales it nearest-neighbour.
 ## Using it
 
 ```rust
-use graticule::{Element, Theme, widget};
+use quadrille::{Element, Theme, widget};
 
 pub fn main() -> iced::Result {
     iced::application(App::default, App::update, App::view)
-        .settings(graticule::settings())
+        .settings(quadrille::settings())
         .theme(|_: &App| Theme::TERMINAL)
         .run()
 }
@@ -60,7 +60,7 @@ instruments, signal instruments, a technical drawing, every widget in every
 state, and a type lab comparing candidate fonts.
 
 ```sh
-cargo run -p graticule-demo --release
+cargo run -p quadrille-demo --release
 ```
 
 F1–F5 choose the page and F6 changes the theme.
@@ -75,8 +75,8 @@ python3 -m http.server 8080 --directory web
 Every page can be rendered headless to PNG, one pixel per virtual pixel:
 
 ```sh
-cargo run -p graticule-demo --example render -- target/render
-cargo run -p graticule-demo --example render -- target/lab 42 --lab
+cargo run -p quadrille-demo --example render -- target/render
+cargo run -p quadrille-demo --example render -- target/lab 42 --lab
 ```
 
 ## Fonts

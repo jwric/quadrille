@@ -123,7 +123,7 @@ pub mod container {
     }
 
     /// An inverse block: the accent behind text in [`on_accent`], which is
-    /// how a graticule interface emphasises instead of with a bold weight.
+    /// how a quadrille interface emphasises instead of with a bold weight.
     ///
     /// [`on_accent`]: crate::Palette::on_accent
     pub fn inverse(theme: &Theme) -> Style {

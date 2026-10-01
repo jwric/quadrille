@@ -1,10 +1,10 @@
 //! Every widget of the toolkit, in every state it has.
-use graticule::instrument::{self, Marker, Side};
-use graticule::widget::{self, bar, group, indicator, key, label, lamp, soft_key};
-use graticule::{Element, Face, Palette, Theme, px, style};
 use iced::Widget as _;
 use iced::widget::{column, container, progress_bar, row, slider, space, table};
 use iced::{Alignment, Color, Length};
+use quadrille::instrument::{self, Marker, Side};
+use quadrille::widget::{self, bar, group, indicator, key, label, lamp, soft_key};
+use quadrille::{Element, Face, Palette, Theme, px, style};
 
 /// The state of the widgets on the page.
 #[derive(Debug, Clone)]

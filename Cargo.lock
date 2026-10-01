@@ -1068,30 +1068,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "graticule"
-version = "0.1.0"
-dependencies = [
- "iced",
- "iced_core",
- "iced_test",
- "iced_widget",
- "png",
-]
-
-[[package]]
-name = "graticule-demo"
-version = "0.1.0"
-dependencies = [
- "console_error_panic_hook",
- "graticule",
- "iced",
- "iced_test",
- "wasm-bindgen",
- "web-sys",
- "web-time",
-]
-
-[[package]]
 name = "guillotiere"
 version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2310,6 +2286,30 @@ name = "pxfm"
 version = "0.1.30"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d55d956fa96f5ec02be2e13af0e20391a5aa83d6a074e3ad368959d0fab299ea"
+
+[[package]]
+name = "quadrille"
+version = "0.1.0"
+dependencies = [
+ "iced",
+ "iced_core",
+ "iced_test",
+ "iced_widget",
+ "png",
+]
+
+[[package]]
+name = "quadrille-demo"
+version = "0.1.0"
+dependencies = [
+ "console_error_panic_hook",
+ "iced",
+ "iced_test",
+ "quadrille",
+ "wasm-bindgen",
+ "web-sys",
+ "web-time",
+]
 
 [[package]]
 name = "quick-error"

@@ -1,6 +1,6 @@
 //! A pixel-perfect retro UI toolkit for [iced].
 //!
-//! Graticule targets the `0.15-pixel-scale` iced fork, which lays an interface
+//! Quadrille targets the `0.15-pixel-scale` iced fork, which lays an interface
 //! out in virtual pixels and upscales it nearest-neighbour. On top of that it
 //! provides:
 //!
@@ -14,16 +14,16 @@
 //! the pixel scale and antialiasing match what the toolkit is drawn for:
 //!
 //! ```no_run
-//! # use graticule::Theme;
+//! # use quadrille::Theme;
 //! # #[derive(Default)] struct App;
 //! # #[derive(Debug, Clone)] enum Message {}
 //! # impl App {
 //! #     fn update(&mut self, _message: Message) {}
-//! #     fn view(&self) -> impl iced::Widget<Message, Theme> { graticule::widget::label("hello") }
+//! #     fn view(&self) -> impl iced::Widget<Message, Theme> { quadrille::widget::label("hello") }
 //! # }
 //! pub fn main() -> iced::Result {
 //!     iced::application(App::default, App::update, App::view)
-//!         .settings(graticule::settings())
+//!         .settings(quadrille::settings())
 //!         .theme(|_: &App| Theme::TERMINAL)
 //!         .run()
 //! }
@@ -43,7 +43,7 @@ pub mod widget;
 pub use face::Face;
 pub use theme::{Palette, Theme};
 
-/// An [`iced::Element`] drawn with the graticule [`Theme`].
+/// An [`iced::Element`] drawn with the quadrille [`Theme`].
 pub type Element<'a, Message, Renderer = iced_widget::Renderer> =
     iced_widget::core::Element<'a, Message, Theme, Renderer>;
 
@@ -53,7 +53,7 @@ pub type Element<'a, Message, Renderer = iced_widget::Renderer> =
 /// [`PixelScaleMode::Auto`]: iced::PixelScaleMode::Auto
 pub const LOGICAL_PER_VIRTUAL: u32 = 2;
 
-/// The [`iced::Settings`] a graticule application runs with.
+/// The [`iced::Settings`] a quadrille application runs with.
 ///
 /// It loads the toolkit's fonts, makes [`Face::BODY`] the default face, turns
 /// antialiasing off, and scales the interface by [`LOGICAL_PER_VIRTUAL`].
