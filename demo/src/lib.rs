@@ -10,6 +10,8 @@ pub mod lab;
 mod scope;
 mod shell;
 mod telemetry;
+mod thermal;
+mod trend;
 
 use iced::Widget as _;
 use iced::keyboard::{self, key};
@@ -64,7 +66,7 @@ pub struct App {
 pub enum Page {
     /// Flight instruments.
     Hud,
-    /// Signal instruments: a scope, a spectrum and its waterfall.
+    /// The bench: a scope, the power buses and the hull's temperatures.
     Scope,
     /// Technical drawing: a cutaway with callouts, and a block diagram.
     Drawing,
@@ -138,12 +140,6 @@ impl App {
         match message {
             Message::Tick => {
                 self.telemetry = Telemetry::at(self.launch.elapsed().as_secs_f32());
-
-                // The waterfall's time scale assumes the scope page's rate, so
-                // it only takes rows while it is shown.
-                if self.page == Page::Scope {
-                    self.scope.tick(&self.telemetry);
-                }
             }
             Message::Show(page) => self.page = page,
             Message::NextTheme => self.theme = (self.theme + 1) % Theme::ALL.len(),

@@ -1,47 +1,25 @@
-//! Signal instruments: a scope, a spectrum and its waterfall.
+//! The bench: a scope on two test points, the power buses over the last
+//! minute, and the temperatures of the hull.
 //!
-//! Two channels on a bench: CH1 a 1 kHz tone with harmonics, a little noise
-//! and a glitch every other cycle; CH2 a carrier swept around 10 kHz with a
-//! beacon keyed on and off beside it. The scope triggers on CH1, and the
-//! analyser takes both at once. Every sample is a function of the time, so a
-//! frame can be drawn again by asking for the same second; only the
-//! waterfall's history is carried from tick to tick, and it starts out as if
-//! the analyser had been running.
-use std::cell::OnceCell;
+//! CH1 is a 1 kHz tone with harmonics, a little noise and a glitch every
+//! other cycle; CH2 a sine swept between 6 and 14 kHz. The scope triggers on
+//! CH1. Every reading on the page is a function of the time, so a frame can
+//! be drawn again by asking for the same second.
 use std::f64::consts::TAU;
 
 use iced::widget::{column, container, row, space};
 use iced::{Alignment, Length};
-use quadrille::instrument::{self, Cursors, History};
+use quadrille::instrument::{self, Cursors};
 use quadrille::scale::engineering;
 use quadrille::widget::{self, group, knob, label};
 use quadrille::{Element, Theme, px, style};
 
-use crate::Telemetry;
+use crate::thermal::{self, Field};
+use crate::{Telemetry, trend};
 use iced::Widget as _;
 
-/// The analyser's sample rate: 1024 points make bins 40 Hz wide.
-const RATE: f64 = 40_960.0;
-/// Points in a transform.
-const POINTS: usize = 1024;
-/// Bins from 0 Hz to half the sample rate.
-const BINS: usize = POINTS / 2;
-/// The width of a bin, in Hz.
-const WIDTH: f32 = (RATE / POINTS as f64) as f32;
-/// Rows of history the waterfall keeps.
-const DEPTH: usize = 160;
-/// The seconds between two ticks of the clock, and between two rows.
-const TICK: f64 = 0.066;
-/// The analyser's floor, in dB.
-const FLOOR: f32 = -100.0;
-/// The analyser's ceiling, in dB.
-const CEILING: f32 = 0.0;
-/// The dB of a division on the analyser.
-const DIVISION: f32 = 20.0;
-/// The waterfall's floor, in dB: the analyser's noise stays dark under it.
-const APERTURE: f32 = -76.0;
-/// How far a held peak falls each row, in dB.
-const FALL: f32 = 0.6;
+/// The seconds of the power buses the chart shows.
+const MINUTE: f32 = 60.0;
 
 /// Samples across the scope's screen.
 const SAMPLES: usize = 1000;
@@ -57,7 +35,6 @@ const VOLTS: f32 = 0.5;
 pub struct Scope {
     timebase: Timebase,
     trigger: i32,
-    history: OnceCell<History>,
 }
 
 impl Default for Scope {
@@ -65,7 +42,6 @@ impl Default for Scope {
         Self {
             timebase: Timebase::Micros200,
             trigger: 3,
-            history: OnceCell::new(),
         }
     }
 }
@@ -114,17 +90,8 @@ impl Scope {
         }
     }
 
-    /// Adds the analyser's row for this tick to the waterfall, once the page
-    /// has been shown.
-    pub fn tick(&mut self, telemetry: &Telemetry) {
-        if let Some(history) = self.history.get_mut() {
-            history.push(&analyse(f64::from(telemetry.elapsed)));
-        }
-    }
-
     pub fn view(&self, telemetry: &Telemetry) -> Element<'_, Message> {
         let now = f64::from(telemetry.elapsed);
-        let history = self.history.get_or_init(|| seeded(now));
         let level = self.trigger as f32 / 10.0;
 
         let left = column![
@@ -154,46 +121,41 @@ impl Scope {
         ]
         .width(264.0);
 
-        let latest = history.row(0).unwrap_or(&[]);
-        let peak = strongest(latest, 0.0..f32::MAX);
-        let carrier = strongest(latest, 5_500.0..f32::MAX);
+        let field = Field::of(telemetry);
 
         let right = column![
-            instrument::spectrum(latest)
-                .range(FLOOR..=CEILING, DIVISION)
-                .span(-WIDTH / 2.0..=(BINS as f32 - 0.5) * WIDTH, "Hz")
-                .hold(history.hold(FALL))
-                .marker(peak.0)
-                .marker(carrier.0)
+            trend::trend(telemetry.elapsed, MINUTE, 22.0..=30.0, "V")
+                .series("BUS A", |t| Telemetry::at(t).bus[0])
+                .series("BUS B", |t| Telemetry::at(t).bus[1])
+                .series("BUS C", |t| Telemetry::at(t).bus[2])
+                .gutter(thermal::GUTTER)
                 .height(128.0),
-            instrument::waterfall(history)
-                .range(APERTURE..=CEILING)
-                .rate((1.0 / TICK) as f32),
+            thermal::thermal(field),
         ]
         .spacing(px::GAP)
         .width(Length::Fill);
 
         let one = measure(now, ch1);
         let two = measure(now, ch2);
-        let floor = median(latest);
+        let survey = field.survey();
 
         let readouts = row![
             channel_group("CH1", 0, &one),
             channel_group("CH2", 1, &two),
             group(
-                "ANALYSER",
+                "THERMAL",
                 row![
                     column![
-                        reading("M1", engineering(peak.0, "Hz")),
-                        reading("M2", engineering(carrier.0, "Hz")),
-                        reading("FLOOR", format!("{floor:.0} dB")),
+                        reading("MAX", celsius(survey.hottest)),
+                        reading("MIN", celsius(survey.coldest)),
+                        reading("MEAN", celsius(survey.mean)),
                     ]
                     .spacing(px::TIGHT)
                     .width(Length::Fill),
                     column![
-                        reading("LVL", format!("{:.1} dB", peak.1)),
-                        reading("LVL", format!("{:.1} dB", carrier.1)),
-                        reading("SNR", format!("{:.0} dB", peak.1 - floor)),
+                        reading("SUN", format!("{:03.0}°", field.sun)),
+                        reading("BAY", celsius(field.bay())),
+                        reading("AFT", celsius(field.aft())),
                     ]
                     .spacing(px::TIGHT)
                     .width(Length::Fill),
@@ -259,6 +221,11 @@ impl Scope {
     }
 }
 
+/// A temperature, signed, in whole degrees.
+fn celsius(degrees: f32) -> String {
+    format!("{degrees:+.0}°C")
+}
+
 /// A label and a value on one line, the value set flush right.
 fn reading<'a>(name: &'a str, value: String) -> Element<'a, Message> {
     row![
@@ -290,25 +257,17 @@ fn channel_group<'a>(name: &'a str, index: usize, measured: &Measured) -> Elemen
     .boxed()
 }
 
-/// CH1 as the probe sees it: the tone, and a glitch 15 µs wide in the
-/// trough of every other cycle.
+/// CH1: the tone, a trace of noise, and a glitch 15 µs wide in the trough
+/// of every other cycle.
 fn ch1(t: f64) -> f64 {
     let cycle = 1_000.0 * t;
     let glitch = cycle.floor() as i64 % 2 == 1 && (0.80..0.815).contains(&cycle.fract());
 
-    tone(t) + if glitch { 0.6 } else { 0.0 }
+    clean(t) + 0.004 * noise(t, 1) + if glitch { 0.6 } else { 0.0 }
 }
 
-/// CH1 as the analyser sees it, through a filter that a glitch does not
-/// pass: a 1 kHz tone with harmonics that breathes a little, a trace of
-/// noise, and a weak carrier wandering around 12 kHz far under it.
-fn tone(t: f64) -> f64 {
-    let wander = 12_000.0 * t + 400.0 * 5.0 / TAU * (1.0 - (TAU * t / 5.0).cos());
-
-    clean(t) + 0.004 * (TAU * wander).sin() + 0.004 * noise(t, 1)
-}
-
-/// The 1 kHz tone alone, which the trigger follows.
+/// A 1 kHz tone with harmonics that breathes a little: what the trigger
+/// follows.
 fn clean(t: f64) -> f64 {
     let phase = TAU * 1_000.0 * t;
     let swell = 1.0 + 0.06 * (TAU * t / 11.0).sin();
@@ -320,17 +279,12 @@ fn clean(t: f64) -> f64 {
             + 0.03 * (2.0 * phase + 1.0).sin())
 }
 
-/// CH2: a carrier swept between 6 and 14 kHz every seven seconds, and a
-/// beacon at 17 kHz keyed on and off every 1.2 seconds.
+/// CH2: a sine swept between 6 and 14 kHz every seven seconds, and a trace
+/// of noise.
 fn ch2(t: f64) -> f64 {
     let sweep = 10_000.0 * t - 4_000.0 * 7.0 / TAU * (TAU * t / 7.0).cos();
-    let keyed = if (t / 1.2).floor() as i64 % 2 == 0 {
-        0.05
-    } else {
-        0.0
-    };
 
-    0.6 * (TAU * sweep).sin() + keyed * (TAU * 17_000.0 * t).sin() + 0.004 * noise(t, 2)
+    0.6 * (TAU * sweep).sin() + 0.004 * noise(t, 2)
 }
 
 /// Noise from -1 to 1, fixed for each microsecond and channel.
@@ -417,129 +371,9 @@ fn measure(now: f64, signal: fn(f64) -> f64) -> Measured {
     }
 }
 
-/// The analyser's row at `t`: both channels, Hann windowed, in dB of a volt.
-fn analyse(t: f64) -> Vec<f32> {
-    let mut re: Vec<f64> = (0..POINTS)
-        .map(|n| {
-            let time = t - (POINTS - n) as f64 / RATE;
-            let window = 0.5 - 0.5 * (TAU * n as f64 / POINTS as f64).cos();
-
-            (tone(time) + ch2(time)) * window
-        })
-        .collect();
-    let mut im = vec![0.0; POINTS];
-
-    fft(&mut re, &mut im);
-
-    // A Hann window passes half a sine's amplitude.
-    let scale = 2.0 / (POINTS as f64 * 0.5);
-
-    (0..BINS)
-        .map(|k| {
-            let magnitude = (re[k] * re[k] + im[k] * im[k]).sqrt() * scale;
-
-            (20.0 * magnitude.max(1e-9).log10()) as f32
-        })
-        .collect()
-}
-
-/// The history for the moment `now`, as if the analyser had been running.
-fn seeded(now: f64) -> History {
-    let mut history = History::new(BINS, DEPTH);
-
-    for age in (0..DEPTH).rev() {
-        history.push(&analyse(now - age as f64 * TICK));
-    }
-
-    history
-}
-
-/// An in-place radix-2 transform of a power-of-two length.
-fn fft(re: &mut [f64], im: &mut [f64]) {
-    let n = re.len();
-    let mut j = 0;
-
-    for i in 1..n {
-        let mut bit = n >> 1;
-
-        while j & bit != 0 {
-            j ^= bit;
-            bit >>= 1;
-        }
-
-        j |= bit;
-
-        if i < j {
-            re.swap(i, j);
-            im.swap(i, j);
-        }
-    }
-
-    let mut length = 2;
-
-    while length <= n {
-        let angle = -TAU / length as f64;
-
-        for start in (0..n).step_by(length) {
-            for k in 0..length / 2 {
-                let (sin, cos) = (angle * k as f64).sin_cos();
-                let (a, b) = (start + k, start + k + length / 2);
-                let (x, y) = (re[b] * cos - im[b] * sin, re[b] * sin + im[b] * cos);
-
-                re[b] = re[a] - x;
-                im[b] = im[a] - y;
-                re[a] += x;
-                im[a] += y;
-            }
-        }
-
-        length <<= 1;
-    }
-}
-
-/// The frequency and level of the strongest bin whose frequency is in
-/// `band`.
-fn strongest(levels: &[f32], band: std::ops::Range<f32>) -> (f32, f32) {
-    levels
-        .iter()
-        .enumerate()
-        .map(|(bin, level)| (bin as f32 * WIDTH, *level))
-        .filter(|(frequency, _)| band.contains(frequency))
-        .fold((0.0, f32::NEG_INFINITY), |best, bin| {
-            if bin.1 > best.1 { bin } else { best }
-        })
-}
-
-/// The median level of a row: the analyser's noise floor.
-fn median(levels: &[f32]) -> f32 {
-    let mut sorted = levels.to_vec();
-
-    sorted.sort_by(f32::total_cmp);
-    sorted.get(sorted.len() / 2).copied().unwrap_or(FLOOR)
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn a_tone_lands_in_its_bin_at_its_level() {
-        let tone = 1.0;
-        let mut re: Vec<f64> = (0..POINTS)
-            .map(|n| {
-                let window = 0.5 - 0.5 * (TAU * n as f64 / POINTS as f64).cos();
-
-                tone * (TAU * 25.0 * n as f64 / POINTS as f64).sin() * window
-            })
-            .collect();
-        let mut im = vec![0.0; POINTS];
-
-        fft(&mut re, &mut im);
-
-        let magnitude = (re[25] * re[25] + im[25] * im[25]).sqrt() * 2.0 / (POINTS as f64 * 0.5);
-
-        assert!((magnitude - tone).abs() < 1e-6, "{magnitude}");
-    }
 
     #[test]
     fn the_scope_measures_ch1() {
@@ -550,12 +384,5 @@ mod tests {
             "{}",
             measured.frequency
         );
-    }
-
-    #[test]
-    fn the_same_second_draws_the_same_waterfall() {
-        let (a, b) = (seeded(42.0), seeded(42.0));
-
-        assert!(a.rows().zip(b.rows()).all(|(a, b)| a == b));
     }
 }
