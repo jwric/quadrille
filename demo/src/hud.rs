@@ -1,11 +1,11 @@
 //! The flight instruments.
 use iced::widget::{canvas, column, container, row, space};
 use iced::{Alignment, Length};
-use quadrille::instrument::{self, Marker, Side};
 use quadrille::widget::{self, bar, group, indicator, label, lamp};
 use quadrille::{Element, Face, px, style};
 
 use crate::attitude::Attitude;
+use crate::instrument::{self, Marker, Side};
 use crate::{Message, Telemetry};
 use iced::Widget as _;
 

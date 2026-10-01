@@ -1,13 +1,13 @@
 use std::borrow::Cow;
 
-use iced_widget::canvas::{self, Frame, Geometry};
-use iced_widget::core::{Color, Length, Point, Rectangle, mouse};
-use iced_widget::graphics::geometry;
+use iced::advanced::graphics::geometry;
+use iced::widget::canvas::{self, Frame, Geometry};
+use iced::{Color, Length, Point, Rectangle, mouse};
 
-use crate::canvas::Memo;
-use crate::draw::{Anchor, Dash, Direction, Pen, rectangle};
-use crate::scale::{self, End};
-use crate::{Face, Palette, Theme, px};
+use quadrille::canvas::Memo;
+use quadrille::draw::{Anchor, Dash, Direction, Pen, rectangle};
+use quadrille::scale::{self, End};
+use quadrille::{Face, Palette, Theme, px};
 
 /// Minor ticks per division.
 const MINOR: i32 = 5;
@@ -625,7 +625,7 @@ impl Plot<'_> {
     }
 }
 
-crate::canvas_widget!(Plot<'a>);
+quadrille::canvas_widget!(Plot<'a>);
 
 #[cfg(test)]
 mod tests {

@@ -14,9 +14,10 @@ use iced::widget::canvas::{self, Frame, Geometry};
 use iced::{Length, Point, Rectangle, Renderer, mouse};
 use quadrille::canvas::Memo;
 use quadrille::draw::{Anchor, Dash, Pen, rectangle};
-use quadrille::instrument::channel;
 use quadrille::scale::{self, End};
 use quadrille::{Face, Palette, Theme, px};
+
+use crate::instrument::channel;
 
 /// A reading the chart takes at a moment, in seconds.
 type Reading<'a> = Box<dyn Fn(f32) -> f32 + 'a>;

@@ -8,7 +8,8 @@
 //!   built-in widgets;
 //! - pixel fonts at their native sizes, described by [`Face`];
 //! - integer drawing primitives for canvases, in [`draw`];
-//! - instrument-panel widgets, in [`widget`].
+//! - the parts of a visualization, in [`scale`] and [`canvas`];
+//! - controls and indicators, in [`widget`].
 //!
 //! Start an application with [`settings`], so that fonts, the default face,
 //! the pixel scale and antialiasing match what the toolkit is drawn for:
@@ -35,7 +36,6 @@ pub mod draw;
 pub mod face;
 pub mod fonts;
 pub mod icon;
-pub mod instrument;
 pub mod px;
 pub mod scale;
 pub mod style;

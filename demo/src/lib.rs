@@ -3,8 +3,18 @@
 //! Each page shows one side of the toolkit: the HUD its instruments, the kit
 //! its widgets in every state, the lab its type.
 mod attitude;
+#[expect(
+    dead_code,
+    reason = "the drafting verbs came whole from the toolkit; the drawing page uses most of them"
+)]
+mod drafting;
 mod drawing;
 mod hud;
+#[expect(
+    dead_code,
+    reason = "the instruments came whole from the toolkit; the console uses most of their options"
+)]
+mod instrument;
 mod kit;
 pub mod lab;
 mod scope;

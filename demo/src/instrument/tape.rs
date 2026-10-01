@@ -1,11 +1,11 @@
 use std::ops::RangeInclusive;
 
-use iced_widget::canvas::{self, Frame, Geometry};
-use iced_widget::core::{Length, Point, Rectangle, mouse};
-use iced_widget::graphics::geometry;
+use iced::advanced::graphics::geometry;
+use iced::widget::canvas::{self, Frame, Geometry};
+use iced::{Length, Point, Rectangle, mouse};
 
-use crate::draw::{Anchor, Direction, Pen, rectangle};
-use crate::{Face, Theme};
+use quadrille::draw::{Anchor, Direction, Pen, rectangle};
+use quadrille::{Face, Theme};
 
 /// Which side of an instrument a mark sits on.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -208,4 +208,4 @@ where
     }
 }
 
-crate::canvas_widget!(Tape<'a>);
+quadrille::canvas_widget!(Tape<'a>);

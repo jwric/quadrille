@@ -9,11 +9,11 @@ use std::f64::consts::TAU;
 
 use iced::widget::{column, container, row, space};
 use iced::{Alignment, Length};
-use quadrille::instrument::{self, Cursors};
 use quadrille::scale::engineering;
 use quadrille::widget::{self, group, knob, label};
 use quadrille::{Element, Theme, px, style};
 
+use crate::instrument::{self, Cursors};
 use crate::thermal::{self, Field};
 use crate::{Telemetry, trend};
 use iced::Widget as _;

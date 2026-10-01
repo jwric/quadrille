@@ -1,20 +1,9 @@
-use iced_widget::core::{Color, Point};
-use iced_widget::graphics::geometry;
+use iced::advanced::graphics::geometry;
+use iced::{Color, Point};
 
-use super::{Axis, Direction, Pen, rectangle, shape};
+use quadrille::draw::{Axis, Direction, Pen, rectangle, shape};
 
 /// An orthogonal wire: horizontal and vertical runs between corners.
-///
-/// ```
-/// use quadrille::draw::{Axis, Wire};
-/// use iced::Point;
-///
-/// let (from, to) = (Point::new(0, 0), Point::new(12, -8));
-/// let wire = Wire::start(from).horizontal(12).vertical(-8);
-///
-/// assert_eq!(wire, Wire::route(from, to, Axis::Horizontal, Axis::Vertical));
-/// assert_eq!(wire.pixels().len(), 21);
-/// ```
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Wire {
     corners: Vec<Point<i32>>,
@@ -170,36 +159,51 @@ pub fn junctions(wires: &[Wire]) -> Vec<Point<i32>> {
     junctions
 }
 
-impl<Renderer> Pen<'_, Renderer>
-where
-    Renderer: geometry::Renderer,
-{
-    /// A 1 px [`Wire`].
-    pub fn wire(&mut self, wire: &Wire, color: Color) {
-        if let [only] = wire.corners[..] {
-            self.pixel(only, color);
-        }
-
-        for pair in wire.corners.windows(2) {
-            let (a, b) = (pair[0], pair[1]);
-
-            if a.y == b.y {
-                self.hline(a.x, b.x, a.y, color);
-            } else {
-                self.vline(a.x, a.y, b.y, color);
-            }
-        }
+/// See [`Drafting::wire`](super::Drafting::wire).
+pub(super) fn wire<Renderer: geometry::Renderer>(
+    pen: &mut Pen<'_, Renderer>,
+    wire: &Wire,
+    color: Color,
+) {
+    if let [only] = wire.corners[..] {
+        pen.pixel(only, color);
     }
 
-    /// A junction dot: a 3 × 3 square on the centre pixel.
-    pub fn junction(&mut self, at: Point<i32>, color: Color) {
-        self.fill(rectangle(at.x - 1, at.y - 1, 3, 3), color);
+    for pair in wire.corners.windows(2) {
+        let (a, b) = (pair[0], pair[1]);
+
+        if a.y == b.y {
+            pen.hline(a.x, b.x, a.y, color);
+        } else {
+            pen.vline(a.x, a.y, b.y, color);
+        }
     }
+}
+
+/// See [`Drafting::junction`](super::Drafting::junction).
+pub(super) fn junction<Renderer: geometry::Renderer>(
+    pen: &mut Pen<'_, Renderer>,
+    at: Point<i32>,
+    color: Color,
+) {
+    pen.fill(rectangle(at.x - 1, at.y - 1, 3, 3), color);
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_wire_routed_with_one_bend_is_the_wire_drawn_by_hand() {
+        let (from, to) = (Point::new(0, 0), Point::new(12, -8));
+        let wire = Wire::start(from).horizontal(12).vertical(-8);
+
+        assert_eq!(
+            wire,
+            Wire::route(from, to, Axis::Horizontal, Axis::Vertical)
+        );
+        assert_eq!(wire.pixels().len(), 21);
+    }
 
     /// Renders `wires` as art: `#` for a wire, `o` for a junction.
     fn art(wires: &[Wire]) -> String {

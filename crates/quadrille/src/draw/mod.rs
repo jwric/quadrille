@@ -21,23 +21,14 @@
 //! ```
 pub mod shape;
 
-mod dimension;
-mod linetype;
-mod note;
 mod polygon;
 mod raster;
-mod sheet;
 mod sprite;
-mod wire;
 
-pub use linetype::Chain;
-pub use note::{Note, fan};
 pub use polygon::Polygon;
 pub use raster::Raster;
 pub use shape::Direction;
-pub use sheet::{Field, Sheet, Table};
 pub use sprite::Sprite;
-pub use wire::{Wire, junctions};
 
 use std::ops::RangeInclusive;
 
@@ -219,6 +210,15 @@ where
         self.pixels(&shape::circle(centre, radius), color);
     }
 
+    /// A 1 px circle of `radius` broken into `dash`, with a dash centred
+    /// straight up.
+    ///
+    /// The pattern is stretched to repeat a whole number of times around the
+    /// circle, so the last dash meets the first evenly.
+    pub fn dashed_circle(&mut self, centre: Point<i32>, radius: i32, dash: Dash, color: Color) {
+        self.pixels(&shape::dashed_circle(centre, radius, dash), color);
+    }
+
     /// A filled disc of `radius` around the centre pixel.
     pub fn disc(&mut self, centre: Point<i32>, radius: i32, color: Color) {
         for (y, from, to) in shape::disc(centre, radius) {
@@ -389,64 +389,50 @@ where
         });
     }
 
-    /// A callout: a leader from `target` to `elbow`, then a shelf along the
-    /// elbow's row with `label` set on it, in the style of an engineering
-    /// drawing.
-    ///
-    /// The shelf runs away from the target: right when the elbow is right of
-    /// it, left otherwise. It overhangs the label by two pixels at each end.
-    pub fn callout(
+    /// Sets `content` struck through: a bar across the middle of its
+    /// capitals, reaching half a cell past each end.
+    pub fn strike(
         &mut self,
-        target: Point<i32>,
-        elbow: Point<i32>,
-        label: Lettering<'_>,
-        line: Color,
+        face: Face,
+        content: &str,
+        at: Point<i32>,
+        anchor: Anchor,
+        color: Color,
     ) {
-        const OVERHANG: i32 = 2;
-
-        let width = i32::from(label.face.width(label.text)) + 2 * OVERHANG;
-        let rightwards = elbow.x >= target.x;
-        let far = if rightwards {
-            elbow.x + width - 1
-        } else {
-            elbow.x - width + 1
+        let width = i32::from(face.width(content));
+        let cap = i32::from(face.cap());
+        let left = match anchor.x {
+            Horizontal::Left => at.x,
+            Horizontal::Centre => at.x - width.div_euclid(2),
+            Horizontal::Right => at.x - width,
+        };
+        let cap_top = match anchor.y {
+            Vertical::Top => at.y + i32::from(face.cap_top()),
+            Vertical::CapTop => at.y,
+            Vertical::Middle => at.y - cap.div_euclid(2),
+            Vertical::Baseline => at.y - cap,
+            Vertical::Bottom => at.y - i32::from(face.line()) + i32::from(face.cap_top()),
         };
 
-        self.line(target, elbow, line);
-        self.hline(elbow.x, far, elbow.y, line);
+        let weight = (cap / 4).max(1);
+        let reach = i32::from(face.advance()) / 2;
 
-        let left = elbow.x.min(far) + OVERHANG;
-
-        self.letter(label, Point::new(left, elbow.y - 1), Anchor::BASELINE_LEFT);
-    }
-
-    /// A horizontal dimension along row `y` across the columns of `span`: end
-    /// ticks, and the line broken around `label` in the middle.
-    pub fn dimension(
-        &mut self,
-        span: RangeInclusive<i32>,
-        y: i32,
-        label: Lettering<'_>,
-        line: Color,
-    ) {
-        const TICK: i32 = 2;
-        const GAP: i32 = 2;
-
-        let (left, right) = (*span.start().min(span.end()), *span.start().max(span.end()));
-        let width = i32::from(label.face.width(label.text));
-        let middle = left + (right - left).div_euclid(2);
-        let label_left = middle - width.div_euclid(2);
-
-        self.vline(left, y - TICK, y + TICK, line);
-        self.vline(right, y - TICK, y + TICK, line);
-
-        if width > 0 && label_left - GAP > left && label_left + width + GAP <= right {
-            self.hline(left + 1, label_left - GAP - 1, y, line);
-            self.hline(label_left + width + GAP, right - 1, y, line);
-            self.letter(label, Point::new(label_left, y), Anchor::LEFT);
-        } else {
-            self.hline(left + 1, right - 1, y, line);
-        }
+        self.text(
+            face,
+            content,
+            Point::new(left, cap_top),
+            Anchor::new(Horizontal::Left, Vertical::CapTop),
+            color,
+        );
+        self.fill(
+            rectangle(
+                left - reach,
+                cap_top + (cap - weight).div_euclid(2),
+                width + 2 * reach,
+                weight,
+            ),
+            color,
+        );
     }
 
     /// The marks of a [`Ticks`] scale.

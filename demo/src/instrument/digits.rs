@@ -1,14 +1,15 @@
 //! A number whose digits are dials.
 use std::ops::RangeInclusive;
 
-use iced_widget::core::layout::{self, Layout};
-use iced_widget::core::renderer;
-use iced_widget::core::text::Renderer as TextRenderer;
-use iced_widget::core::widget::Meta;
-use iced_widget::core::widget::tree::{self, Tree};
-use iced_widget::core::{Color, Event, Length, Point, Rectangle, Shell, Size, Widget, mouse};
+use iced::advanced::layout::{self, Layout};
+use iced::advanced::renderer;
+use iced::advanced::text::Renderer as TextRenderer;
+use iced::advanced::widget::Meta;
+use iced::advanced::widget::tree::{self, Tree};
+use iced::advanced::{Shell, Widget};
+use iced::{Color, Event, Length, Point, Rectangle, Size, mouse};
 
-use crate::{Face, px};
+use quadrille::{Face, px};
 
 /// A whole number shown to a fixed number of digits, each of which the wheel
 /// steps by its own place value: the wheel over the hundreds steps by a
@@ -16,7 +17,7 @@ use crate::{Face, px};
 ///
 /// Leading zeros are drawn faint and digits can be grouped with a separator,
 /// as on the dial of a receiver: `014.074.000`.
-pub struct Digits<'a, Message, Theme = crate::Theme>
+pub struct Digits<'a, Message, Theme = quadrille::Theme>
 where
     Theme: Catalog,
 {
@@ -341,7 +342,7 @@ pub trait Catalog {
 /// A styling function for [`Digits`].
 pub type StyleFn<'a, Theme> = Box<dyn Fn(&Theme) -> Style + 'a>;
 
-impl Catalog for crate::Theme {
+impl Catalog for quadrille::Theme {
     type Class<'a> = StyleFn<'a, Self>;
 
     fn default<'a>() -> Self::Class<'a> {
@@ -354,7 +355,7 @@ impl Catalog for crate::Theme {
 }
 
 /// Ink digits, faint zeros and separators, the accent under the hand.
-pub fn default(theme: &crate::Theme) -> Style {
+pub fn default(theme: &quadrille::Theme) -> Style {
     let palette = theme.palette();
 
     Style {
@@ -366,12 +367,12 @@ pub fn default(theme: &crate::Theme) -> Style {
 }
 
 /// Digits lit in the accent, like the tuned frequency of a receiver.
-pub fn lamp(theme: &crate::Theme) -> Style {
+pub fn lamp(theme: &quadrille::Theme) -> Style {
     let palette = theme.palette();
 
     Style {
         digit: palette.accent,
-        zero: crate::theme::dim(palette.accent, 0.45),
+        zero: quadrille::theme::dim(palette.accent, 0.45),
         separator: palette.muted,
         hovered: palette.ink,
     }
@@ -381,7 +382,7 @@ pub fn lamp(theme: &crate::Theme) -> Style {
 mod tests {
     use super::*;
 
-    fn digits(value: i64) -> Digits<'static, (), crate::Theme> {
+    fn digits(value: i64) -> Digits<'static, (), quadrille::Theme> {
         Digits::new(value, 9).group(3, '.')
     }
 

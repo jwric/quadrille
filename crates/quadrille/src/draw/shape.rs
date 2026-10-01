@@ -5,6 +5,8 @@
 //! named by its top-left corner; `(x, y)` covers `[x, x + 1) × [y, y + 1)`.
 use iced_widget::core::{Point, Rectangle};
 
+use super::Dash;
+
 /// The pixels of the line from `from` to `to`, both included, in order.
 ///
 /// One pixel per step along the major axis, so the line is a pixel thin at
@@ -63,6 +65,33 @@ pub fn circle(centre: Point<i32>, radius: i32) -> Vec<Point<i32>> {
     });
 
     dedup(pixels)
+}
+
+/// The pixels of a [`circle`] broken into `dash`, with a dash centred
+/// straight up.
+///
+/// The pattern is stretched to repeat a whole number of times around the
+/// circle, so the last dash meets the first evenly.
+pub fn dashed_circle(centre: Point<i32>, radius: i32, dash: Dash) -> Vec<Point<i32>> {
+    let period = i32::from(dash.on) + i32::from(dash.off);
+
+    if period == 0 {
+        return circle(centre, radius);
+    }
+
+    let circumference = std::f32::consts::TAU * radius as f32;
+    let periods = (circumference / period as f32).round().max(1.0);
+
+    circle(centre, radius)
+        .into_iter()
+        .filter(|pixel| {
+            let bearing = bearing(pixel.x - centre.x, pixel.y - centre.y);
+            let along = bearing / 360.0 * periods * period as f32;
+            let index = (along + f32::from(dash.on) / 2.0).floor() as i32;
+
+            dash.lights(index)
+        })
+        .collect()
 }
 
 /// The rows of a filled disc of `radius` around the centre pixel, as
@@ -382,6 +411,25 @@ fn dedup(mut pixels: Vec<Point<i32>>) -> Vec<Point<i32>> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_dashed_circle_repeats_its_dash_evenly() {
+        let full = circle(Point::new(0, 0), 10);
+        let dashed = dashed_circle(Point::new(0, 0), 10, Dash::new(4, 4));
+
+        assert!(dashed.iter().all(|pixel| full.contains(pixel)));
+        assert!(dashed.len() * 3 > full.len());
+        assert!(dashed.len() * 3 < full.len() * 2);
+
+        // Mirror images across the vertical axis are lit alike, bar the
+        // pixels where a dash ends.
+        let symmetric = dashed
+            .iter()
+            .filter(|pixel| dashed.contains(&Point::new(-pixel.x, pixel.y)))
+            .count();
+
+        assert!(symmetric * 4 > dashed.len() * 3);
+    }
 
     /// Renders `pixels` as art: `#` for a lit pixel, `.` otherwise.
     fn art(pixels: &[Point<i32>]) -> String {

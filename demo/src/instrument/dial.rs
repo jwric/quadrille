@@ -1,11 +1,11 @@
 use std::ops::RangeInclusive;
 
-use iced_widget::canvas::{self, Frame, Geometry};
-use iced_widget::core::{Length, Point, Rectangle, mouse};
-use iced_widget::graphics::geometry;
+use iced::advanced::graphics::geometry;
+use iced::widget::canvas::{self, Frame, Geometry};
+use iced::{Length, Point, Rectangle, mouse};
 
-use crate::Theme;
-use crate::draw::{Pen, shape};
+use quadrille::Theme;
+use quadrille::draw::{Pen, shape};
 
 /// A semicircular dial: a heavy arc over its hub, ticks inside it, and a
 /// needle pointing at the value.
@@ -123,4 +123,4 @@ where
     }
 }
 
-crate::canvas_widget!(Dial);
+quadrille::canvas_widget!(Dial);

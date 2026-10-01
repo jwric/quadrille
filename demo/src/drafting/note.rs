@@ -1,10 +1,10 @@
 use std::ops::RangeInclusive;
 
-use iced_widget::core::{Color, Point, Rectangle};
-use iced_widget::graphics::geometry;
+use iced::advanced::graphics::geometry;
+use iced::{Color, Point, Rectangle};
 
-use super::{Anchor, Lettering, Pen, rectangle};
-use crate::Face;
+use quadrille::Face;
+use quadrille::draw::{Anchor, Lettering, Pen, rectangle};
 
 /// A note on a drawing: a label of one or more lines, each on a shelf, tied
 /// to a point by a leader.
@@ -235,35 +235,65 @@ pub fn fan(notes: &mut [Note<'_>], column: i32, rows: RangeInclusive<i32>, pivot
     }
 }
 
-impl<Renderer> Pen<'_, Renderer>
-where
-    Renderer: geometry::Renderer,
-{
-    /// A [`Note`]: its leader, shelves and drop in `line`, and its label in
-    /// the label's colour.
-    pub fn note(&mut self, note: &Note<'_>, line: Color) {
-        if note.target != note.elbow {
-            self.line(note.target, note.elbow, line);
-        }
+/// See [`Drafting::callout`](super::Drafting::callout).
+pub(super) fn callout<Renderer: geometry::Renderer>(
+    pen: &mut Pen<'_, Renderer>,
+    target: Point<i32>,
+    elbow: Point<i32>,
+    label: Lettering<'_>,
+    line: Color,
+) {
+    const OVERHANG: i32 = 2;
 
-        let shelves = note.shelves();
+    let width = i32::from(label.face.width(label.text)) + 2 * OVERHANG;
+    let rightwards = elbow.x >= target.x;
+    let far = if rightwards {
+        elbow.x + width - 1
+    } else {
+        elbow.x - width + 1
+    };
 
-        if let Some(&(_, last, inner, _)) = shelves.get(1..).and_then(<[_]>::last) {
-            self.vline(inner, note.elbow.y + 1, last, line);
-        }
+    pen.line(target, elbow, line);
+    pen.hline(elbow.x, far, elbow.y, line);
 
-        for (i, &(x, row, inner, outer)) in shelves.iter().enumerate() {
-            let text = note.label.text.lines().nth(i).unwrap_or_default();
+    let left = elbow.x.min(far) + OVERHANG;
 
-            self.hline(inner, outer, row, line);
-            self.text(
-                note.label.face,
-                text,
-                Point::new(x, row - 1),
-                Anchor::BASELINE_LEFT,
-                note.label.color,
-            );
-        }
+    pen.text(
+        label.face,
+        label.text,
+        Point::new(left, elbow.y - 1),
+        Anchor::BASELINE_LEFT,
+        label.color,
+    );
+}
+
+/// See [`Drafting::note`](super::Drafting::note).
+pub(super) fn note<Renderer: geometry::Renderer>(
+    pen: &mut Pen<'_, Renderer>,
+    note: &Note<'_>,
+    line: Color,
+) {
+    if note.target != note.elbow {
+        pen.line(note.target, note.elbow, line);
+    }
+
+    let shelves = note.shelves();
+
+    if let Some(&(_, last, inner, _)) = shelves.get(1..).and_then(<[_]>::last) {
+        pen.vline(inner, note.elbow.y + 1, last, line);
+    }
+
+    for (i, &(x, row, inner, outer)) in shelves.iter().enumerate() {
+        let text = note.label.text.lines().nth(i).unwrap_or_default();
+
+        pen.hline(inner, outer, row, line);
+        pen.text(
+            note.label.face,
+            text,
+            Point::new(x, row - 1),
+            Anchor::BASELINE_LEFT,
+            note.label.color,
+        );
     }
 }
 

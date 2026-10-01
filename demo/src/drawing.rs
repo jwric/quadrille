@@ -6,14 +6,15 @@ use iced::widget::canvas::{Action, Cache, Event, Frame, Geometry};
 use iced::widget::{canvas, column, container, row, space, stack};
 use iced::{Alignment, Color, Length, Point, Rectangle, Renderer, Size, mouse};
 use quadrille::draw::{
-    Anchor, Axis, Chain, Dash, Direction, Field, Horizontal, Lettering, Note, Pattern, Pen,
-    Polygon, Sheet, Table, Vertical, Wire, fan, junctions, rectangle, shape,
+    Anchor, Axis, Dash, Direction, Horizontal, Lettering, Pattern, Pen, Polygon, Vertical,
+    rectangle, shape,
 };
 use quadrille::theme::mix;
 use quadrille::widget::{field, inverse, label};
 use quadrille::{Element, Face, Palette, Theme, px, style};
 
 use crate::Telemetry;
+use crate::drafting::{Chain, Drafting, Field, Note, Sheet, Table, Wire, fan, junctions};
 use iced::Widget as _;
 
 /// The state of the page.

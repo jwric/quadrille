@@ -5,14 +5,12 @@
 //! in [`Face::BODY`], sized in whole pixels and styled from the [`Theme`], so
 //! a panel built from them lines up without per-call tuning.
 pub mod bar;
-pub mod digits;
 pub mod group;
 pub mod icon;
 pub mod knob;
 pub mod lamp;
 
 pub use bar::Bar;
-pub use digits::Digits;
 pub use group::Group;
 pub use icon::Icon;
 pub use knob::Knob;
@@ -304,12 +302,6 @@ where
 /// A group of `content` under a rule broken by its `name`.
 pub fn group<'a, W>(name: impl Into<String>, content: W) -> Group<'a, W, Theme> {
     Group::new(name, content)
-}
-
-/// A whole number shown to `places` digits, each of which the wheel steps
-/// by its place value once [`Digits::on_change`] is set.
-pub fn digits<'a, Message>(value: i64, places: u8) -> Digits<'a, Message> {
-    Digits::new(value, places)
 }
 
 /// A knob turning `value` through `range` in steps of `step`.
