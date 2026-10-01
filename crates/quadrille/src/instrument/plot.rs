@@ -1,13 +1,12 @@
 use std::borrow::Cow;
-use std::cell::RefCell;
 
-use iced_widget::canvas::{self, Cache, Frame, Geometry};
+use iced_widget::canvas::{self, Frame, Geometry};
 use iced_widget::core::{Color, Length, Point, Rectangle, mouse};
 use iced_widget::graphics::geometry;
 
-use super::keep;
-use super::scale::{self, End};
+use crate::canvas::Memo;
 use crate::draw::{Anchor, Dash, Direction, Pen, rectangle};
+use crate::scale::{self, End};
 use crate::{Face, Palette, Theme, px};
 
 /// Minor ticks per division.
@@ -362,11 +361,11 @@ impl<Message, Renderer> canvas::Program<Message, Theme, Renderer> for Plot<'_>
 where
     Renderer: geometry::Renderer + 'static,
 {
-    type State = State<Renderer>;
+    type State = Memo<(u16, u16, Palette), Renderer>;
 
     fn draw(
         &self,
-        state: &State<Renderer>,
+        chrome: &Self::State,
         renderer: &Renderer,
         theme: &Theme,
         bounds: Rectangle,
@@ -381,15 +380,12 @@ where
 
         let (columns, rows) = (i32::from(self.columns), i32::from(self.rows));
 
-        keep(
-            &state.chrome,
-            &state.drawn,
+        let chrome = chrome.draw(
+            renderer,
+            bounds.size(),
             (self.columns, self.rows, *palette),
+            |frame| graticule(&mut Pen::new(frame), &screen, columns, rows, palette),
         );
-
-        let chrome = state.chrome.draw(renderer, bounds.size(), |frame| {
-            graticule(&mut Pen::new(frame), &screen, columns, rows, palette);
-        });
 
         let mut frame = Frame::new(renderer, bounds.size());
 
@@ -629,23 +625,7 @@ impl Plot<'_> {
     }
 }
 
-/// The state of a [`Plot`]: its graticule, drawn once for each size and
-/// theme.
-pub struct State<Renderer: geometry::Renderer> {
-    chrome: Cache<Renderer>,
-    drawn: RefCell<Option<(u16, u16, Palette)>>,
-}
-
-impl<Renderer: geometry::Renderer> Default for State<Renderer> {
-    fn default() -> Self {
-        Self {
-            chrome: Cache::new(),
-            drawn: RefCell::new(None),
-        }
-    }
-}
-
-canvas_widget!(Plot<'a>);
+crate::canvas_widget!(Plot<'a>);
 
 #[cfg(test)]
 mod tests {

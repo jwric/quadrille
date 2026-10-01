@@ -12,7 +12,8 @@ use std::f64::consts::TAU;
 
 use iced::widget::{column, container, row, space};
 use iced::{Alignment, Length};
-use quadrille::instrument::{self, Cursors, History, engineering};
+use quadrille::instrument::{self, Cursors, History};
+use quadrille::scale::engineering;
 use quadrille::widget::{self, group, knob, label};
 use quadrille::{Element, Theme, px, style};
 

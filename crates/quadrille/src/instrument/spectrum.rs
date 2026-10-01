@@ -1,14 +1,14 @@
 use std::borrow::Cow;
-use std::cell::RefCell;
 use std::ops::RangeInclusive;
 
-use iced_widget::canvas::{self, Cache, Frame, Geometry};
+use iced_widget::canvas::{self, Frame, Geometry};
 use iced_widget::core::{Length, Point, Rectangle, mouse};
 use iced_widget::graphics::geometry;
 
-use super::keep;
-use super::scale::{self, End, GUTTER};
+use super::GUTTER;
+use crate::canvas::Memo;
 use crate::draw::{Anchor, Dash, Direction, Horizontal, Pen, Vertical, rectangle};
+use crate::scale::{self, End};
 use crate::theme::mix;
 use crate::{Face, Palette, Theme, px};
 
@@ -473,11 +473,11 @@ impl<Message, Renderer> canvas::Program<Message, Theme, Renderer> for Spectrum<'
 where
     Renderer: geometry::Renderer + 'static,
 {
-    type State = State<Renderer>;
+    type State = Memo<Key, Renderer>;
 
     fn draw(
         &self,
-        state: &State<Renderer>,
+        chrome: &Self::State,
         renderer: &Renderer,
         theme: &Theme,
         bounds: Rectangle,
@@ -490,19 +490,15 @@ where
             return Vec::new();
         };
 
-        keep(
-            &state.chrome,
-            &state.drawn,
-            Key {
-                palette: *palette,
-                range: self.range.clone(),
-                step: self.step,
-                span: self.span.clone(),
-                plan,
-            },
-        );
+        let key = Key {
+            palette: *palette,
+            range: self.range.clone(),
+            step: self.step,
+            span: self.span.clone(),
+            plan,
+        };
 
-        let chrome = state.chrome.draw(renderer, bounds.size(), |frame| {
+        let chrome = chrome.draw(renderer, bounds.size(), key, |frame| {
             self.chrome(&mut Pen::new(frame), &plan, size.width, palette);
         });
 
@@ -521,7 +517,7 @@ where
 
 /// What the chrome of a [`Spectrum`] is drawn from.
 #[derive(Debug, Clone, PartialEq)]
-struct Key {
+pub struct Key {
     palette: Palette,
     range: RangeInclusive<f32>,
     step: f32,
@@ -529,23 +525,7 @@ struct Key {
     plan: Plan,
 }
 
-/// The state of a [`Spectrum`]: its scales, drawn again only when they
-/// change.
-pub struct State<Renderer: geometry::Renderer> {
-    chrome: Cache<Renderer>,
-    drawn: RefCell<Option<Key>>,
-}
-
-impl<Renderer: geometry::Renderer> Default for State<Renderer> {
-    fn default() -> Self {
-        Self {
-            chrome: Cache::new(),
-            drawn: RefCell::new(None),
-        }
-    }
-}
-
-canvas_widget!(Spectrum<'a>);
+crate::canvas_widget!(Spectrum<'a>);
 
 #[cfg(test)]
 mod tests {

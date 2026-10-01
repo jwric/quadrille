@@ -208,4 +208,4 @@ where
     }
 }
 
-canvas_widget!(Tape<'a>);
+crate::canvas_widget!(Tape<'a>);

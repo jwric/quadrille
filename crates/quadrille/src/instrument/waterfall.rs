@@ -1,18 +1,16 @@
-use std::cell::RefCell;
 use std::fmt;
 use std::ops::RangeInclusive;
 use std::sync::atomic::{AtomicU64, Ordering};
 
-use iced_widget::canvas::{self, Cache, Geometry, Image};
-use iced_widget::core::image::{FilterMethod, Handle};
-use iced_widget::core::{Color, Length, Point, Rectangle, Size, mouse};
+use iced_widget::canvas::{self, Geometry};
+use iced_widget::core::{Length, Point, Rectangle, mouse};
 use iced_widget::graphics::geometry;
 
-use super::keep;
-use super::scale::{self, GUTTER};
-use crate::draw::{Anchor, Pen, rectangle};
-use crate::theme::mix;
-use crate::{Face, Palette, Theme, px};
+use super::GUTTER;
+use crate::canvas::Memo;
+use crate::draw::{Anchor, Pen, Raster, rectangle};
+use crate::theme::Ramp;
+use crate::{Face, Palette, Theme, px, scale};
 
 /// A scrolling record of rows of levels, the newest first: what a
 /// [`Waterfall`] draws.
@@ -154,113 +152,6 @@ impl fmt::Debug for History {
     }
 }
 
-/// Flat steps of colour from the void out through a palette's signal
-/// colours, each standing further from the void than the last.
-///
-/// The steps are built from the void, the line colour, the live colour, the
-/// accent and the ink, in that order, keeping only the stops that stand
-/// clearly further from the void than the stop before: a palette whose
-/// accent is no brighter than its live colour leaves the accent out, and a
-/// level that reads louder is always drawn louder. The steps between stops
-/// are spaced evenly in lightness. A level takes the step it falls in, with
-/// no blending between steps.
-#[derive(Debug, Clone, PartialEq)]
-pub struct Ramp {
-    steps: Vec<Color>,
-}
-
-impl Ramp {
-    /// The number of steps in [`Ramp::of`].
-    pub const STEPS: usize = 12;
-
-    /// The least a stop must stand further from the void than the one
-    /// before to be kept, in CIE lightness.
-    const GAIN: f32 = 4.0;
-
-    /// The ramp of `palette`, in [`Ramp::STEPS`] steps.
-    pub fn of(palette: &Palette) -> Self {
-        Self::new(palette, Self::STEPS)
-    }
-
-    /// The ramp of `palette` in `steps` steps.
-    pub fn new(palette: &Palette, steps: usize) -> Self {
-        let steps = steps.max(2);
-        let base = lightness(palette.void);
-        let contrast = |color: Color| (lightness(color) - base).abs();
-
-        let mut stops = vec![(palette.void, 0.0)];
-
-        for color in [palette.line, palette.live, palette.accent, palette.ink] {
-            let distance = contrast(color);
-
-            if distance >= stops[stops.len() - 1].1 + Self::GAIN {
-                stops.push((color, distance));
-            }
-        }
-
-        let far = stops[stops.len() - 1].1;
-
-        let steps = (0..steps)
-            .map(|i| {
-                let target = far * i as f32 / (steps - 1) as f32;
-                let segment = stops
-                    .windows(2)
-                    .position(|pair| target <= pair[1].1)
-                    .unwrap_or(stops.len().saturating_sub(2));
-
-                match stops.get(segment..segment + 2) {
-                    Some([(from, near), (to, next)]) => {
-                        mix(*from, *to, (target - near) / (next - near))
-                    }
-                    _ => palette.void,
-                }
-            })
-            .collect();
-
-        Self { steps }
-    }
-
-    /// The step `level` falls in, for a level from 0 to 1.
-    pub fn step(&self, level: f32) -> usize {
-        let count = self.steps.len();
-
-        if level.is_nan() {
-            return 0;
-        }
-
-        ((level.clamp(0.0, 1.0) * count as f32) as usize).min(count - 1)
-    }
-
-    /// The colour of `level`, from 0 to 1.
-    pub fn color(&self, level: f32) -> Color {
-        self.steps[self.step(level)]
-    }
-
-    /// The colours of the steps, from the void out.
-    pub fn steps(&self) -> &[Color] {
-        &self.steps
-    }
-}
-
-/// The CIE lightness of an sRGB colour, from 0 to 100.
-fn lightness(color: Color) -> f32 {
-    let linear = |channel: f32| {
-        if channel <= 0.04045 {
-            channel / 12.92
-        } else {
-            ((channel + 0.055) / 1.055).powf(2.4)
-        }
-    };
-
-    let luminance = 0.2126 * linear(color.r) + 0.7152 * linear(color.g) + 0.0722 * linear(color.b);
-
-    if luminance > 216.0 / 24389.0 {
-        116.0 * luminance.cbrt() - 16.0
-    } else {
-        luminance * 24389.0 / 27.0
-    }
-}
-
 /// A waterfall: a [`History`] drawn as a raster, the newest row at the top,
 /// one pixel a row, each level coloured by the step of the theme's [`Ramp`]
 /// it falls in.
@@ -334,40 +225,24 @@ impl Waterfall<'_> {
     }
 
     /// The raster: one row of pixels a row of history, one column a column.
-    fn raster(&self, columns: usize, rows: usize, ramp: &Ramp) -> Vec<u8> {
+    fn raster(&self, columns: u32, rows: u32, ramp: &Ramp) -> Raster {
         let (low, high) = (*self.range.start(), *self.range.end());
         let span = if high == low { 1.0 } else { high - low };
+        let steps = ramp.steps();
+        let mut raster = Raster::new(columns, rows, steps[0]);
 
-        let colors: Vec<[u8; 4]> = ramp.steps().iter().map(|c| rgba(*c)).collect();
-        let mut pixels = Vec::with_capacity(columns * rows * 4);
+        for (age, row) in self.history.rows().take(rows as usize).enumerate() {
+            for column in 0..columns {
+                let level = row[scale::bins(column as usize, columns as usize, row.len())]
+                    .iter()
+                    .fold(f32::NEG_INFINITY, |peak, &level| peak.max(level));
 
-        for age in 0..rows {
-            match self.history.row(age) {
-                Some(row) => {
-                    for column in 0..columns {
-                        let level = row[scale::bins(column, columns, row.len())]
-                            .iter()
-                            .fold(f32::NEG_INFINITY, |peak, &level| peak.max(level));
-
-                        pixels.extend(colors[ramp.step((level - low) / span)]);
-                    }
-                }
-                None => {
-                    for _ in 0..columns {
-                        pixels.extend(colors[0]);
-                    }
-                }
+                raster.set(column, age as u32, steps[ramp.step((level - low) / span)]);
             }
         }
 
-        pixels
+        raster
     }
-}
-
-fn rgba(color: Color) -> [u8; 4] {
-    let byte = |channel: f32| (channel.clamp(0.0, 1.0) * 255.0).round() as u8;
-
-    [byte(color.r), byte(color.g), byte(color.b), byte(color.a)]
 }
 
 impl<Message, Renderer> canvas::Program<Message, Theme, Renderer> for Waterfall<'_>
@@ -391,40 +266,31 @@ where
             return Vec::new();
         };
 
-        keep(
-            &state.chrome,
-            &state.chrome_drawn,
+        let chrome = state.chrome.draw(
+            renderer,
+            bounds.size(),
             (palette, self.gutter, self.rate),
+            |target| {
+                let mut pen = Pen::new(target);
+
+                pen.outline(frame, palette.edge);
+
+                if let Some(rate) = self.rate {
+                    ages(&mut pen, frame, rate, &palette);
+                }
+            },
         );
-        keep(
-            &state.raster,
-            &state.raster_drawn,
-            (self.history.version(), palette, self.range.clone()),
-        );
 
-        let chrome = state.chrome.draw(renderer, bounds.size(), |target| {
-            let mut pen = Pen::new(target);
+        let picture = (self.history.version(), palette, self.range.clone());
 
-            pen.outline(frame, palette.edge);
+        let raster = state
+            .raster
+            .draw(renderer, bounds.size(), picture, |target| {
+                let (columns, rows) = (frame.width - 2, frame.height - 2);
+                let raster = self.raster(columns as u32, rows as u32, &Ramp::of(&palette));
 
-            if let Some(rate) = self.rate {
-                ages(&mut pen, frame, rate, &palette);
-            }
-        });
-
-        let raster = state.raster.draw(renderer, bounds.size(), |target| {
-            let (columns, rows) = (frame.width - 2, frame.height - 2);
-            let pixels = self.raster(columns as usize, rows as usize, &Ramp::of(&palette));
-
-            target.draw_image(
-                Rectangle::new(
-                    Point::new((frame.x + 1) as f32, (frame.y + 1) as f32),
-                    Size::new(columns as f32, rows as f32),
-                ),
-                Image::new(Handle::from_rgba(columns as u32, rows as u32, pixels))
-                    .filter_method(FilterMethod::Nearest),
-            );
-        });
+                Pen::new(target).raster(&raster, Point::new(frame.x + 1, frame.y + 1));
+            });
 
         vec![chrome, raster]
     }
@@ -477,71 +343,24 @@ type Picture = ((u64, u64), Palette, RangeInclusive<f32>);
 /// The state of a [`Waterfall`]: its frame and its raster, each drawn again
 /// only when what it shows has changed.
 pub struct State<Renderer: geometry::Renderer> {
-    chrome: Cache<Renderer>,
-    chrome_drawn: RefCell<Option<(Palette, u16, Option<f32>)>>,
-    raster: Cache<Renderer>,
-    raster_drawn: RefCell<Option<Picture>>,
+    chrome: Memo<(Palette, u16, Option<f32>), Renderer>,
+    raster: Memo<Picture, Renderer>,
 }
 
 impl<Renderer: geometry::Renderer> Default for State<Renderer> {
     fn default() -> Self {
         Self {
-            chrome: Cache::new(),
-            chrome_drawn: RefCell::new(None),
-            raster: Cache::new(),
-            raster_drawn: RefCell::new(None),
+            chrome: Memo::new(),
+            raster: Memo::new(),
         }
     }
 }
 
-canvas_widget!(Waterfall<'a>);
+crate::canvas_widget!(Waterfall<'a>);
 
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn every_ramp_steps_away_from_the_void() {
-        for theme in Theme::ALL {
-            let palette = theme.palette();
-            let ramp = Ramp::of(palette);
-            let base = lightness(palette.void);
-            let contrast: Vec<f32> = ramp
-                .steps()
-                .iter()
-                .map(|c| (lightness(*c) - base).abs())
-                .collect();
-
-            assert_eq!(ramp.steps()[0], palette.void, "{theme}");
-
-            for pair in contrast.windows(2) {
-                assert!(pair[1] > pair[0], "{theme}: {contrast:?}");
-            }
-        }
-    }
-
-    #[test]
-    fn a_ramp_leaves_out_a_stop_that_would_step_back() {
-        let palette = Palette::TERMINAL;
-        let ramp = Ramp::of(&palette);
-
-        assert!(!ramp.steps().contains(&palette.accent));
-        assert_eq!(ramp.steps().last(), Some(&palette.live));
-    }
-
-    #[test]
-    fn levels_take_whole_steps() {
-        let ramp = Ramp::new(&Palette::PHOSPHOR, 4);
-
-        assert_eq!(ramp.step(0.0), 0);
-        assert_eq!(ramp.step(0.24), 0);
-        assert_eq!(ramp.step(0.25), 1);
-        assert_eq!(ramp.step(0.99), 3);
-        assert_eq!(ramp.step(1.0), 3);
-        assert_eq!(ramp.step(-3.0), 0);
-        assert_eq!(ramp.step(f32::NAN), 0);
-        assert_eq!(ramp.color(0.6), ramp.steps()[2]);
-    }
 
     #[test]
     fn a_history_keeps_its_newest_rows() {

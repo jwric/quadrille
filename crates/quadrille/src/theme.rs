@@ -5,6 +5,9 @@
 //! so swapping the palette re-dresses the whole interface: nothing outside a
 //! palette names a hex.
 mod catalog;
+mod ramp;
+
+pub use ramp::Ramp;
 
 use std::borrow::Cow;
 

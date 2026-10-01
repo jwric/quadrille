@@ -1,16 +1,17 @@
 //! The arithmetic of scales: engineering notation, round steps, where labels
 //! go, and which samples land in which column.
+//!
+//! None of it draws. A visualization asks these functions where its ticks,
+//! labels and columns fall, then draws them with a [`Pen`](crate::draw::Pen),
+//! so every chart, gauge and readout on a quadrille interface drops a label
+//! the same way and decimates its samples the same way.
 use std::ops::{Range, RangeInclusive};
-
-/// The default margin left of a spectrum or a waterfall: room for `-100`
-/// and a tick.
-pub const GUTTER: u16 = 28;
 
 const PREFIXES: [&str; 9] = ["p", "n", "µ", "m", "", "k", "M", "G", "T"];
 const UNPREFIXED: i32 = 4;
 
 /// `value` to three significant figures in engineering notation, then a
-/// space and `unit` with its prefix: `500 µs`, `1.00 kHz`, `-40.0 mV`.
+/// space and `unit` with its prefix: `500 µs`, `1.00 km`, `-40.0 mV`.
 pub fn engineering(value: f32, unit: &str) -> String {
     let (number, prefix) = split(value, 3);
 
@@ -211,8 +212,8 @@ pub fn row(labels: &[(i32, End)], span: RangeInclusive<i32>, gap: i32) -> Vec<Op
 /// The bins shown in `column` when `bins` bins are spread across `columns`
 /// columns.
 ///
-/// A bin belongs to the column its middle falls in, so a frequency at the
-/// middle of a bin and the bin itself land in the same column. Every column
+/// A bin belongs to the column its middle falls in, so a value at the middle
+/// of a bin and the bin itself land in the same column. Every column
 /// shows at least one bin: with more bins than columns the ranges tile
 /// without overlap, and with fewer a bin is repeated across the columns it
 /// covers.
@@ -308,16 +309,16 @@ mod tests {
     #[test]
     fn engineering_keeps_three_figures() {
         assert_eq!(engineering(0.0005, "s"), "500 µs");
-        assert_eq!(engineering(1000.0, "Hz"), "1.00 kHz");
+        assert_eq!(engineering(1000.0, "m"), "1.00 km");
         assert_eq!(engineering(-0.04, "V"), "-40.0 mV");
-        assert_eq!(engineering(7_020_000.0, "Hz"), "7.02 MHz");
+        assert_eq!(engineering(7_020_000.0, "B"), "7.02 MB");
         assert_eq!(engineering(0.0, "V"), "0.00 V");
         assert_eq!(engineering(2.5, "V"), "2.50 V");
     }
 
     #[test]
     fn engineering_carries_rounding_into_the_next_prefix() {
-        assert_eq!(engineering(999.7, "Hz"), "1.00 kHz");
+        assert_eq!(engineering(999.7, "m"), "1.00 km");
         assert_eq!(engineering(9.996, "V"), "10.0 V");
         assert_eq!(engineering(99.96, "V"), "100 V");
     }

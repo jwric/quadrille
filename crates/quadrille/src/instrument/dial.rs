@@ -123,4 +123,4 @@ where
     }
 }
 
-canvas_widget!(Dial);
+crate::canvas_widget!(Dial);

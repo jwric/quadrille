@@ -30,18 +30,27 @@
 //! ```
 //!
 //! [iced]: https://github.com/iced-rs/iced
+pub mod canvas;
 pub mod draw;
 pub mod face;
 pub mod fonts;
 pub mod icon;
 pub mod instrument;
 pub mod px;
+pub mod scale;
 pub mod style;
 pub mod theme;
 pub mod widget;
 
 pub use face::Face;
 pub use theme::{Palette, Theme};
+
+/// What [`canvas_widget!`] expands to names, so that it works in a crate
+/// that depends on iced rather than on its widget crate.
+#[doc(hidden)]
+pub mod __private {
+    pub use iced_widget;
+}
 
 /// An [`iced::Element`] drawn with the quadrille [`Theme`].
 pub type Element<'a, Message, Renderer = iced_widget::Renderer> =
