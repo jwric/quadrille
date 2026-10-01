@@ -43,7 +43,7 @@ pub fn view<'a>(telemetry: &Telemetry, video: usize) -> Element<'a, Message> {
         .width(Length::Fill),
         group(
             "VIDEO IN",
-            widget::selector([(0, "A"), (1, "B"), (2, "C")], Some(video), Message::Video),
+            widget::segmented([(0, "A"), (1, "B"), (2, "C")], Some(video), Message::Video),
         )
         .width(Length::Fill),
     ]

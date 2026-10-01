@@ -172,8 +172,8 @@ pub mod button {
     use super::hairline;
     use crate::Theme;
 
-    /// A key: a raised face in a hairline that lifts a step under the cursor
-    /// and drops to the ground while pressed.
+    /// A button: a raised face in a hairline that lifts a step under the
+    /// cursor and drops to the ground while pressed.
     pub fn default(theme: &Theme, status: Status) -> Style {
         let palette = theme.palette();
 
@@ -192,7 +192,7 @@ pub mod button {
         }
     }
 
-    /// A key that is on: the accent face with its legend knocked out.
+    /// A button that is on: the accent face with its legend knocked out.
     pub fn engaged(theme: &Theme, status: Status) -> Style {
         let palette = theme.palette();
 
@@ -209,7 +209,8 @@ pub mod button {
         }
     }
 
-    /// No face until the cursor is over it: a row in a list, a link-like key.
+    /// No face until the cursor is over it: a row in a list, a link-like
+    /// button.
     pub fn ghost(theme: &Theme, status: Status) -> Style {
         let palette = theme.palette();
 
@@ -227,9 +228,9 @@ pub mod button {
         }
     }
 
-    /// One position of a selector: lit in the accent when it is the one
-    /// selected, a plain face otherwise.
-    pub fn position(selected: bool) -> impl Fn(&Theme, Status) -> Style {
+    /// One segment of a segmented control: lit in the accent when it is the
+    /// one selected, a plain face otherwise.
+    pub fn segment(selected: bool) -> impl Fn(&Theme, Status) -> Style {
         move |theme, status| {
             let palette = theme.palette();
 
@@ -251,9 +252,9 @@ pub mod button {
         }
     }
 
-    /// A soft key under a display: the legend alone until the cursor is over
-    /// it, the accent while it is the mode in use.
-    pub fn soft(active: bool) -> impl Fn(&Theme, Status) -> Style {
+    /// A tab: the legend alone until the cursor is over it, the accent while
+    /// it is the one in use.
+    pub fn tab(active: bool) -> impl Fn(&Theme, Status) -> Style {
         move |theme, status| {
             let palette = theme.palette();
 

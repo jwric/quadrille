@@ -1,21 +1,20 @@
 //! Every widget of the toolkit, in every state it has.
+//!
+//! The page shows the toolkit alone: nothing on it is the console's own.
 use iced::Widget as _;
 use iced::widget::{column, container, progress_bar, row, slider, space, table};
 use iced::{Alignment, Color, Length};
-use quadrille::widget::{self, bar, group, indicator, key, label, lamp, soft_key};
-use quadrille::{Element, Face, Palette, Theme, px, style};
-
-use crate::instrument::{self, Marker, Side};
+use quadrille::widget::{self, bar, button, group, indicator, knob, label, lamp, tab};
+use quadrille::{Element, Face, Palette, Theme, icon, px, style};
 
 /// The state of the widgets on the page.
 #[derive(Debug, Clone)]
 pub struct Kit {
-    frequency: i64,
     armed: bool,
     lights: bool,
     level: f32,
-    callsign: String,
-    band: Option<Band>,
+    query: String,
+    rate: Option<Rate>,
     position: usize,
     mode: Mode,
 }
@@ -23,70 +22,65 @@ pub struct Kit {
 impl Default for Kit {
     fn default() -> Self {
         Self {
-            frequency: 14_074_000,
             armed: true,
             lights: false,
             level: 0.62,
-            callsign: String::new(),
-            band: Some(Band::S),
+            query: String::new(),
+            rate: Some(Rate::Normal),
             position: 1,
-            mode: Mode::Track,
+            mode: Mode::Auto,
         }
     }
 }
 
 #[derive(Debug, Clone)]
 pub enum Message {
-    Frequency(i64),
     Armed(bool),
     Lights(bool),
     Level(f32),
-    Callsign(String),
-    Band(Band),
+    Query(String),
+    Rate(Rate),
     Position(usize),
     Mode(Mode),
     Pressed,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Band {
-    L,
-    S,
-    X,
-    Ka,
+pub enum Rate {
+    Slow,
+    Normal,
+    Fast,
 }
 
-impl Band {
-    const ALL: [Self; 4] = [Self::L, Self::S, Self::X, Self::Ka];
+impl Rate {
+    const ALL: [Self; 3] = [Self::Slow, Self::Normal, Self::Fast];
 }
 
-impl std::fmt::Display for Band {
+impl std::fmt::Display for Rate {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(match self {
-            Self::L => "L BAND",
-            Self::S => "S BAND",
-            Self::X => "X BAND",
-            Self::Ka => "KA BAND",
+            Self::Slow => "SLOW",
+            Self::Normal => "NORMAL",
+            Self::Fast => "FAST",
         })
     }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Mode {
-    Track,
-    Scan,
-    Hold,
+    Auto,
+    Manual,
+    Off,
 }
 
 impl Kit {
     pub fn update(&mut self, message: Message) {
         match message {
-            Message::Frequency(frequency) => self.frequency = frequency,
             Message::Armed(armed) => self.armed = armed,
             Message::Lights(lights) => self.lights = lights,
             Message::Level(level) => self.level = level,
-            Message::Callsign(callsign) => self.callsign = callsign.to_uppercase(),
-            Message::Band(band) => self.band = Some(band),
+            Message::Query(query) => self.query = query.to_uppercase(),
+            Message::Rate(rate) => self.rate = Some(rate),
             Message::Position(position) => self.position = position,
             Message::Mode(mode) => self.mode = mode,
             Message::Pressed => self.armed = !self.armed,
@@ -94,27 +88,27 @@ impl Kit {
     }
 
     pub fn view(&self) -> Element<'_, Message> {
-        let keys = group(
-            "KEYS",
+        let buttons = group(
+            "BUTTONS",
             column![
                 row![
-                    key("EXECUTE").on_press(Message::Pressed),
-                    key("ENGAGED")
+                    button("EXECUTE").on_press(Message::Pressed),
+                    button("ENGAGED")
                         .style(style::button::engaged)
                         .on_press(Message::Pressed),
-                    key("DISABLED"),
+                    button("DISABLED"),
                 ]
                 .spacing(px::GAP),
                 row![
-                    soft_key("F1 LIVE", true).on_press(Message::Pressed),
-                    soft_key("F2 IDLE", false).on_press(Message::Pressed),
+                    tab("F1 LIVE", true).on_press(Message::Pressed),
+                    tab("F2 IDLE", false).on_press(Message::Pressed),
                     iced::widget::button(label("GHOST"))
                         .padding(Face::BODY.padding(4, 2, 2))
                         .style(style::button::ghost)
                         .on_press(Message::Pressed),
                 ]
                 .spacing(px::GAP),
-                widget::selector(
+                widget::segmented(
                     [(0, "OFF"), (1, "LOW"), (2, "MID"), (3, "MAX")],
                     Some(self.position),
                     Message::Position,
@@ -172,17 +166,66 @@ impl Kit {
         )
         .width(Length::Fill);
 
+        let percent = (self.level * 100.0).round() as i32;
+        let turn = |value: i32| Message::Level(value as f32 / 100.0);
+
+        let knobs = group(
+            "KNOBS",
+            row![
+                knob(0..=100, percent, 5, turn),
+                knob(0..=100, percent, 5, turn).diameter(19),
+                widget::field("LEVEL", label(format!("{percent:03}%"))),
+            ]
+            .spacing(px::WIDE)
+            .align_y(Alignment::Center),
+        )
+        .width(Length::Fill);
+
+        let icons = group(
+            "ICONS",
+            column(icon::ALL.chunks(8).map(|chunk| {
+                row(chunk
+                    .iter()
+                    .map(|(_, sprite)| widget::icon(*sprite).boxed()))
+                .spacing(px::WIDE)
+                .boxed()
+            }))
+            .spacing(px::GAP),
+        )
+        .width(Length::Fill);
+
+        let files = group(
+            "TABLE",
+            widget::table(
+                [
+                    table::column(label("FILE").style(style::text::muted), |file: File| {
+                        label(file.name)
+                    }),
+                    table::column(label("SIZE").style(style::text::muted), |file: File| {
+                        label(file.size)
+                    })
+                    .align_x(iced::Alignment::End),
+                    table::column(label("AGE").style(style::text::muted), |file: File| {
+                        label(file.age)
+                    })
+                    .align_x(iced::Alignment::End),
+                ],
+                FILES,
+            ),
+        )
+        .width(Length::Fill);
+
         let inputs = group(
             "INPUT",
             column![
-                widget::text_input("CALLSIGN", &self.callsign).on_input(Message::Callsign),
-                widget::pick_list(Band::ALL, self.band, Message::Band),
+                widget::text_input("SEARCH", &self.query).on_input(Message::Query),
+                widget::pick_list(Rate::ALL, self.rate, Message::Rate),
                 widget::checkbox("MASTER ARM", self.armed, Message::Armed),
                 widget::toggler("FLOODLIGHTS", self.lights).on_toggle(Message::Lights),
                 row![
-                    widget::radio("TRACK", Mode::Track, Some(self.mode), Message::Mode),
-                    widget::radio("SCAN", Mode::Scan, Some(self.mode), Message::Mode),
-                    widget::radio("HOLD", Mode::Hold, Some(self.mode), Message::Mode),
+                    widget::radio("AUTO", Mode::Auto, Some(self.mode), Message::Mode),
+                    widget::radio("MANUAL", Mode::Manual, Some(self.mode), Message::Mode),
+                    widget::radio("OFF", Mode::Off, Some(self.mode), Message::Mode),
                 ]
                 .spacing(px::WIDE),
             ]
@@ -222,63 +265,10 @@ impl Kit {
         )
         .width(Length::Fill);
 
-        let instruments = group(
-            "INSTRUMENTS",
-            column![
-                row![
-                    instrument::digits(self.frequency, 9)
-                        .group(3, '.')
-                        .style(instrument::digits::lamp)
-                        .on_change(Message::Frequency),
-                    label("HZ").style(style::text::muted),
-                ]
-                .spacing(px::GAP)
-                .align_y(Alignment::End),
-                row![
-                    instrument::dial(0.0..=1.0, self.level)
-                        .redline(0.8)
-                        .width(64.0)
-                        .height(36.0),
-                    instrument::tape(self.level * 100.0, 5.0)
-                        .format(|value| format!("{value:03.0}"))
-                        .width(40.0)
-                        .height(64.0),
-                    instrument::tape(self.level * 100.0, 5.0)
-                        .marker(Marker::Pointer(Side::Right))
-                        .format(|value| format!("{value:03.0}"))
-                        .width(40.0)
-                        .height(64.0),
-                ]
-                .spacing(px::WIDE),
-            ]
-            .spacing(px::GAP),
-        )
-        .width(Length::Fill);
-
-        let passes = group(
-            "TABLE",
-            widget::table(
-                [
-                    table::column(label("PASS").style(style::text::muted), |pass: Pass| {
-                        label(pass.name)
-                    }),
-                    table::column(label("AOS").style(style::text::muted), |pass: Pass| {
-                        label(pass.rise)
-                    }),
-                    table::column(label("ELEV").style(style::text::muted), |pass: Pass| {
-                        label(format!("{:02}°", pass.elevation))
-                    })
-                    .align_x(iced::Alignment::End),
-                ],
-                PASSES,
-            ),
-        )
-        .width(Length::Fill);
-
-        let left = column![keys, lamps, ink]
+        let left = column![buttons, lamps, ink]
             .spacing(px::FAR)
             .width(Length::FillPortion(1));
-        let middle = column![gauges, instruments, passes]
+        let middle = column![gauges, knobs, icons, files]
             .spacing(px::FAR)
             .width(Length::FillPortion(1));
         let right = column![inputs, palette(), spacing()]
@@ -294,29 +284,29 @@ impl Kit {
     }
 }
 
-/// A pass of a satellite over the station.
+/// A row of the table: a file, its size and how long ago it changed.
 #[derive(Debug, Clone, Copy)]
-struct Pass {
+struct File {
     name: &'static str,
-    rise: &'static str,
-    elevation: u8,
+    size: &'static str,
+    age: &'static str,
 }
 
-const PASSES: [Pass; 3] = [
-    Pass {
-        name: "NOAA-19",
-        rise: "14:02",
-        elevation: 42,
+const FILES: [File; 3] = [
+    File {
+        name: "LOG.TXT",
+        size: "12K",
+        age: "3M",
     },
-    Pass {
-        name: "METEOR-M2",
-        rise: "15:37",
-        elevation: 7,
+    File {
+        name: "CORE.BIN",
+        size: "2.4M",
+        age: "2H",
     },
-    Pass {
-        name: "ISS",
-        rise: "16:11",
-        elevation: 68,
+    File {
+        name: "MAP.DAT",
+        size: "640K",
+        age: "1D",
     },
 ];
 

@@ -100,7 +100,7 @@ impl Scope {
             row![
                 group(
                     "TIME/DIV",
-                    widget::selector(Timebase::ALL, Some(self.timebase), Message::Timebase),
+                    widget::segmented(Timebase::ALL, Some(self.timebase), Message::Timebase),
                 ),
                 group(
                     "TRIGGER",

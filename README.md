@@ -1,20 +1,33 @@
 # quadrille
 
-A pixel-perfect retro UI toolkit for [iced]: instrument panels, technical
-drawings and pixel type, drawn in whole virtual pixels.
+Pixel-perfect type, drawing and widgets for [iced]: interfaces laid out in
+whole pixels, set in pixel fonts and drawn without antialiasing.
 
 It targets the [`0.15-pixel-scale` iced fork][fork], which lays an interface
 out in virtual pixels and upscales it nearest-neighbour.
 
-- **Theme**: a small palette named for roles, five themes, and flat, square
-  styles for every built-in iced widget.
+- **Grid**: every length is a whole number of virtual pixels, from a small
+  spacing scale, and centring rounds the same way everywhere.
 - **Type**: Departure Mono at its native sizes, with a tighter 6 × 12 cell for
-  dense panels. Line heights keep the baseline on a whole pixel.
+  dense panels, or a pixel font of your own. Baselines land on whole pixels.
+- **Colour**: a small palette named for roles, five themes, mixes rounded to
+  8 bits, and a stepped ramp for drawing a level as a tone.
 - **Drawing**: a `Pen` for canvases with integer coordinates only: lines,
-  circles, heavy rings, arcs, ellipses, dashes, dither patterns, sprites,
-  callouts, dimension lines and text anchored by its baseline or capitals.
-- **Widgets**: keys, soft keys, selectors, check boxes, radios, lamps, bar
-  gauges, groups, fields, and canvas instruments (value tapes, dials).
+  circles, heavy rings, arcs, ellipses, polygons, dashes, dither patterns,
+  sprites, rasters, and text anchored by its baseline or capitals.
+- **Visualization**: the arithmetic of scales (round steps, labels that give
+  way rather than being cut, samples folded into columns), drawings kept
+  until what they show changes, and a macro that makes a canvas program a
+  widget.
+- **Widgets**: buttons, tabs, segmented controls, check boxes, radios, lamps,
+  bar gauges, knobs, groups, fields, and flat, square styles for every
+  built-in iced widget.
+
+quadrille knows nothing about what an application is about. A radio's
+waterfall, a chat's timeline and a console's instruments are their
+applications' own, built from the parts above; a subject two applications
+share can become a kit of its own. [DESIGN.md](DESIGN.md) sets out what
+belongs where.
 
 ## Using it
 
@@ -55,8 +68,10 @@ impl App {
 
 ## The showcase
 
-`demo/` is the console of a spacecraft that does not exist: flight
-instruments, signal instruments, a technical drawing, every widget in every
+`demo/` is the console of a spacecraft that does not exist, built on the
+toolkit the way any application would be: flight instruments, a bench with a
+scope, a strip chart and a heat map, and a technical drawing, all the
+console's own. Two pages show the toolkit itself: every widget in every
 state, and a type lab comparing candidate fonts.
 
 ```sh

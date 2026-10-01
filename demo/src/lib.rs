@@ -1,7 +1,9 @@
 //! The quadrille showcase: the console of a spacecraft that does not exist.
 //!
-//! Each page shows one side of the toolkit: the HUD its instruments, the kit
-//! its widgets in every state, the lab its type.
+//! The console is an application built on the toolkit, as any other would
+//! be. Its HUD, bench and drawing are its own pages, drawn with instruments,
+//! charts and drafting it owns. The kit and the lab show the toolkit itself:
+//! every widget in every state, and the type.
 mod attitude;
 #[expect(
     dead_code,

@@ -333,9 +333,9 @@ mod tests {
 
     #[test]
     fn fitting_cuts_with_an_ellipsis_or_drops_the_text() {
-        assert_eq!(Face::BODY.fit("FREQUENCY", 60.0), "FREQUENCY");
-        assert_eq!(Face::BODY.fit("FREQUENCY", 30.0), "FREQ…");
-        assert_eq!(Face::BODY.fit("FREQUENCY", 6.0), "");
+        assert_eq!(Face::BODY.fit("AUTOMATIC", 60.0), "AUTOMATIC");
+        assert_eq!(Face::BODY.fit("AUTOMATIC", 30.0), "AUTO…");
+        assert_eq!(Face::BODY.fit("AUTOMATIC", 6.0), "");
     }
 
     #[test]

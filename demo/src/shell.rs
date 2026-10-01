@@ -1,7 +1,7 @@
 //! The chassis around every page: a status bar above, soft keys below.
 use iced::widget::{column, container, row, space};
 use iced::{Alignment, Length};
-use quadrille::widget::{self, divider, inverse, label, soft_key};
+use quadrille::widget::{self, divider, inverse, label, tab};
 use quadrille::{Element, Face, Theme, face, px, style};
 
 use crate::{Message, Page, Telemetry};
@@ -58,12 +58,12 @@ fn status<'a>(page: Page, telemetry: &Telemetry) -> Element<'a, Message> {
 
 fn keys<'a>(page: Page, theme: &Theme) -> Element<'a, Message> {
     let pages = Page::ALL.into_iter().enumerate().map(|(i, target)| {
-        soft_key(format!("F{} {}", i + 1, target.legend()), target == page)
+        tab(format!("F{} {}", i + 1, target.legend()), target == page)
             .on_press(Message::Show(target))
             .boxed()
     });
 
-    let theme = soft_key(format!("F6 THEME {}", theme.name().to_uppercase()), false)
+    let theme = tab(format!("F6 THEME {}", theme.name().to_uppercase()), false)
         .on_press(Message::NextTheme);
 
     let bar = row(pages)

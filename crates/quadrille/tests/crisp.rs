@@ -3,7 +3,7 @@
 use iced::Widget as _;
 use iced::widget::column;
 use iced_test::Simulator;
-use quadrille::widget::{self, bar, checkbox, group, indicator, inverse, key, label, radio};
+use quadrille::widget::{self, bar, button, checkbox, group, indicator, inverse, label, radio};
 use quadrille::{Element, Palette, Theme, px};
 
 fn panel<'a>() -> Element<'a, ()> {
@@ -20,7 +20,7 @@ fn panel<'a>() -> Element<'a, ()> {
             indicator("LAMP", false),
             checkbox("CHECK", true, |_| ()),
             radio("RADIO", 1, Some(1), |_| ()),
-            key("KEY").on_press(()),
+            button("PRESS").on_press(()),
             inverse(label("INVERSE")),
             widget::divider(),
         ]

@@ -1,15 +1,19 @@
-//! A pixel-perfect retro UI toolkit for [iced].
+//! Pixel-perfect type, drawing and widgets for [iced].
 //!
 //! Quadrille targets the `0.15-pixel-scale` iced fork, which lays an interface
 //! out in virtual pixels and upscales it nearest-neighbour. On top of that it
 //! provides:
 //!
+//! - the spacing scale and the pixel grid, in [`px`];
+//! - pixel fonts at their native sizes, described by [`Face`];
 //! - a [`Theme`] with a small, role-named [`Palette`] and styles for iced's
 //!   built-in widgets;
-//! - pixel fonts at their native sizes, described by [`Face`];
 //! - integer drawing primitives for canvases, in [`draw`];
 //! - the parts of a visualization, in [`scale`] and [`canvas`];
 //! - controls and indicators, in [`widget`].
+//!
+//! It knows nothing about what an application is about: an application's
+//! own widgets are built from these parts, the same way as the toolkit's.
 //!
 //! Start an application with [`settings`], so that fonts, the default face,
 //! the pixel scale and antialiasing match what the toolkit is drawn for:

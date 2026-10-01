@@ -1,5 +1,5 @@
-//! Widgets: instrument-panel controls and indicators, and iced's built-ins set
-//! up for the pixel grid.
+//! Widgets: controls and indicators, and iced's built-ins set up for the
+//! pixel grid.
 //!
 //! The functions here are the toolkit's vocabulary. Each returns a widget set
 //! in [`Face::BODY`], sized in whole pixels and styled from the [`Theme`], so
@@ -21,8 +21,8 @@ use std::borrow::Borrow;
 use iced_widget::core::{self, Alignment, Element, Length};
 use iced_widget::text::{IntoFragment, LineHeight, Shaping};
 use iced_widget::{
-    Button, Column, Container, PickList, Row, Rule, Scrollable, Text, TextInput, Toggler, button,
-    column, container, row, rule, scrollable,
+    Button, Column, Container, PickList, Row, Rule, Scrollable, Text, TextInput, Toggler, column,
+    container, row, rule, scrollable,
 };
 
 use crate::draw::Sprite;
@@ -33,33 +33,33 @@ pub fn label<'a>(content: impl IntoFragment<'a>) -> Text<'a, Theme> {
     Face::BODY.text(content)
 }
 
-/// A key: a legend on a raised face, a line of [`Face::BODY`] with two
+/// A button: a legend on a raised face, a line of [`Face::BODY`] with two
 /// pixels of air above and below.
-pub fn key<'a, Message>(
+pub fn button<'a, Message>(
     legend: impl IntoFragment<'a>,
 ) -> Button<'a, Message, Text<'a, Theme>, Theme>
 where
     Message: 'a,
 {
-    button(Face::BODY.text(legend)).padding(Face::BODY.padding(4, 2, 2))
+    iced_widget::button(Face::BODY.text(legend)).padding(Face::BODY.padding(4, 2, 2))
 }
 
-/// A soft key: a key whose legend is its only mark until it is the mode in
+/// A tab: a button whose legend is its only mark until it is the one in
 /// use, when it is lit.
-pub fn soft_key<'a, Message>(
+pub fn tab<'a, Message>(
     legend: impl IntoFragment<'a>,
     active: bool,
 ) -> Button<'a, Message, Text<'a, Theme>, Theme>
 where
     Message: 'a,
 {
-    key(legend).style(style::button::soft(active))
+    button(legend).style(style::button::tab(active))
 }
 
-/// A selector: positions in one bezel, the selected one lit.
+/// A segmented control: its segments in one bezel, the selected one lit.
 ///
-/// Every position stays pressable, including the selected one.
-pub fn selector<'a, T, Message>(
+/// Every segment stays pressable, including the selected one.
+pub fn segmented<'a, T, Message>(
     options: impl IntoIterator<Item = (T, &'a str)>,
     selected: Option<T>,
     on_select: impl Fn(T) -> Message + 'a,
@@ -68,14 +68,14 @@ where
     T: PartialEq + Copy + 'a,
     Message: Clone + 'a,
 {
-    let positions = options.into_iter().map(|(value, legend)| {
-        button(Face::BODY.text(legend))
+    let segments = options.into_iter().map(|(value, legend)| {
+        iced_widget::button(Face::BODY.text(legend))
             .padding(Face::BODY.padding(4, 1, 1))
-            .style(style::button::position(selected == Some(value)))
+            .style(style::button::segment(selected == Some(value)))
             .on_press(on_select(value))
     });
 
-    container(Row::with_children(positions).spacing(px::HAIR))
+    container(Row::with_children(segments).spacing(px::HAIR))
         .padding(px::HAIR)
         .style(style::container::outline)
 }
@@ -137,7 +137,7 @@ where
     Message: 'a,
     Renderer: core::text::Renderer + 'a,
 {
-    button(
+    iced_widget::button(
         row![mark.height(Face::BODY.line()), Face::BODY.text(legend)]
             .spacing(f32::from(Face::BODY.advance()))
             .align_y(Alignment::Center),
@@ -179,7 +179,7 @@ where
         .padding(face.padding(3, 2, 2))
 }
 
-/// A pick list in [`Face::BODY`], as tall as a [`key`], with an arrow from
+/// A pick list in [`Face::BODY`], as tall as a [`button`], with an arrow from
 /// the face itself.
 pub fn pick_list<'a, T, L, V, Message>(
     options: L,

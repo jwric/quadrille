@@ -1,8 +1,8 @@
 [package]
 name = "quadrille"
 version = "0.1.0"
-description = "A pixel-perfect retro UI toolkit for iced: instrument panels, schematics and pixel type."
-keywords = ["iced", "gui", "pixel-art", "retro", "widgets"]
+description = "Pixel-perfect type, drawing and widgets for iced: interfaces laid out in whole pixels."
+keywords = ["iced", "gui", "pixel-art", "retro", "pixel-font"]
 categories = ["gui"]
 edition.workspace = true
 license.workspace = true

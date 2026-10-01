@@ -1,7 +1,7 @@
 [package]
 name = "quadrille-demo"
 version = "0.1.0"
-description = "The quadrille showcase: an instrument console drawn with the toolkit."
+description = "The quadrille showcase: the console of a spacecraft, built on the toolkit."
 edition.workspace = true
 license.workspace = true
 repository.workspace = true

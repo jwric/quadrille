@@ -11,7 +11,7 @@ use iced::widget::canvas::{self, Frame, Geometry};
 use iced::widget::{button, canvas as canvas_widget, column, container, row, space};
 use iced::{Alignment, Length, Point, Rectangle, Renderer, mouse};
 use quadrille::draw::{Anchor, Horizontal, Pattern, Pen, Vertical, rectangle};
-use quadrille::widget::{self, bar, group, label, selector};
+use quadrille::widget::{self, bar, group, label, segmented};
 use quadrille::{Element, Face, Theme, px, style};
 
 use crate::VIEWPORT;
@@ -134,7 +134,7 @@ impl Lab {
                     )
                     .padding([1.0, px::GAP])
                     .width(Length::Fill)
-                    .style(style::button::position(selected))
+                    .style(style::button::segment(selected))
                     .on_press(Message::Select(i))
                     .boxed()
                 }))
@@ -145,7 +145,7 @@ impl Lab {
         .width(150.0)
         .height(Length::Fill);
 
-        let views = selector(
+        let views = segmented(
             [
                 (View::Specimen, "SPECIMEN"),
                 (View::Ladder, "LADDER"),
