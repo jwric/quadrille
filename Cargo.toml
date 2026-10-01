@@ -5,7 +5,7 @@ members = ["crates/quadrille", "demo"]
 [workspace.package]
 edition = "2024"
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/jwric/graticule"
+repository = "https://github.com/jwric/quadrille"
 
 [workspace.dependencies]
 quadrille = { path = "crates/quadrille" }
