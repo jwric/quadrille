@@ -2,7 +2,7 @@ use std::borrow::Cow;
 use std::cell::RefCell;
 
 use iced_widget::canvas::{self, Cache, Frame, Geometry};
-use iced_widget::core::{Color, Element, Length, Point, Rectangle, mouse};
+use iced_widget::core::{Color, Length, Point, Rectangle, mouse};
 use iced_widget::graphics::geometry;
 
 use super::keep;
@@ -645,17 +645,7 @@ impl<Renderer: geometry::Renderer> Default for State<Renderer> {
     }
 }
 
-impl<'a, Message, Renderer> From<Plot<'a>> for Element<'a, Message, Theme, Renderer>
-where
-    Message: 'a,
-    Renderer: geometry::Renderer + 'static,
-{
-    fn from(plot: Plot<'a>) -> Self {
-        let (width, height) = (plot.width, plot.height);
-
-        iced_widget::canvas(plot).width(width).height(height).into()
-    }
-}
+canvas_widget!(Plot<'a>);
 
 #[cfg(test)]
 mod tests {

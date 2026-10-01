@@ -17,6 +17,7 @@ use iced::widget::{column, container, row, space};
 use iced::{Alignment, Length};
 
 use crate::Telemetry;
+use iced::Widget as _;
 
 /// The analyser's sample rate: 1024 points make bins 40 Hz wide.
 const RATE: f64 = 40_960.0;
@@ -213,7 +214,7 @@ impl Scope {
         .width(Length::Fill)
         .height(Length::Fill)
         .style(style::container::ground)
-        .into()
+        .boxed()
     }
 
     /// The scope's screen: both channels from a little before the trigger,
@@ -253,7 +254,7 @@ impl Scope {
             screen = screen.cursors(Cursors::Vertical(PRETRIGGER as f32, cycle as f32));
         }
 
-        screen.into()
+        screen.boxed()
     }
 }
 
@@ -264,7 +265,7 @@ fn reading<'a>(name: &'a str, value: String) -> Element<'a, Message> {
         space::horizontal(),
         label(value),
     ]
-    .into()
+    .boxed()
 }
 
 /// A channel's measurements, under its name in the channel's colour.
@@ -285,7 +286,7 @@ fn channel_group<'a>(name: &'a str, index: usize, measured: &Measured) -> Elemen
     )
     .style(color)
     .width(Length::FillPortion(1))
-    .into()
+    .boxed()
 }
 
 /// CH1 as the probe sees it: the tone, and a glitch 15 µs wide in the

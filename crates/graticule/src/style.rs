@@ -305,7 +305,6 @@ pub mod text_input {
         Style {
             background: palette.void.into(),
             border: hairline(edge),
-            icon: palette.muted,
             placeholder: palette.faint,
             value,
             selection: mix(palette.void, palette.accent, 0.4),
@@ -457,13 +456,14 @@ pub mod pick_list {
     pub fn default(theme: &Theme, status: Status) -> Style {
         let palette = theme.palette();
 
-        let face = match status {
-            Status::Active => palette.raised,
-            Status::Hovered | Status::Opened { .. } => palette.hover,
+        let (face, text) = match status {
+            Status::Active => (palette.raised, palette.ink),
+            Status::Hovered | Status::Opened { .. } => (palette.hover, palette.ink),
+            Status::Disabled => (palette.raised, palette.faint),
         };
 
         Style {
-            text_color: palette.ink,
+            text_color: text,
             placeholder_color: palette.faint,
             handle_color: palette.muted,
             background: face.into(),

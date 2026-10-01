@@ -2,6 +2,7 @@
 //! smoothed, and nothing is blended except where a style asks for a mix.
 use graticule::widget::{self, bar, checkbox, group, indicator, inverse, key, label, radio};
 use graticule::{Element, Palette, Theme, px};
+use iced::Widget as _;
 use iced::widget::column;
 use iced_test::Simulator;
 
@@ -22,7 +23,7 @@ fn panel<'a>() -> Element<'a, ()> {
         ]
         .spacing(px::GAP),
     )
-    .into()
+    .boxed()
 }
 
 fn roles(palette: &Palette) -> [iced::Color; 15] {

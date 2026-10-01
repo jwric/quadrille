@@ -7,6 +7,7 @@ use iced::{Alignment, Length};
 
 use crate::attitude::Attitude;
 use crate::{Message, Telemetry};
+use iced::Widget as _;
 
 const COLUMN: f32 = 132.0;
 
@@ -145,11 +146,11 @@ pub fn view<'a>(telemetry: &Telemetry, video: usize) -> Element<'a, Message> {
     )
     .padding(px::WIDE)
     .style(style::container::ground)
-    .into()
+    .boxed()
 }
 
 fn caption<'a>(text: &'a str) -> Element<'a, Message> {
-    label(text).style(style::text::muted).into()
+    label(text).style(style::text::muted).boxed()
 }
 
 fn gauges<'a>(levels: &[f32]) -> Element<'a, Message> {
@@ -160,10 +161,10 @@ fn gauges<'a>(levels: &[f32]) -> Element<'a, Message> {
         ]
         .spacing(px::GAP)
         .align_y(Alignment::Center)
-        .into()
+        .boxed()
     }))
     .spacing(px::TIGHT)
-    .into()
+    .boxed()
 }
 
 fn bus<'a>(name: &'a str, volts: f32) -> Element<'a, Message> {
@@ -174,7 +175,7 @@ fn bus<'a>(name: &'a str, volts: f32) -> Element<'a, Message> {
     ]
     .spacing(px::GAP)
     .align_y(Alignment::Center)
-    .into()
+    .boxed()
 }
 
 fn footer<'a>(telemetry: &Telemetry) -> Element<'a, Message> {
@@ -188,5 +189,5 @@ fn footer<'a>(telemetry: &Telemetry) -> Element<'a, Message> {
         field("HEADING", format!("{:03.0}°", telemetry.yaw)),
     ]
     .spacing(px::FAR)
-    .into()
+    .boxed()
 }

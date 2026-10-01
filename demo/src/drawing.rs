@@ -14,6 +14,7 @@ use iced::widget::{canvas, column, container, row, space, stack};
 use iced::{Alignment, Color, Length, Point, Rectangle, Renderer, Size, mouse};
 
 use crate::Telemetry;
+use iced::Widget as _;
 
 /// The state of the page.
 #[derive(Debug, Clone, Default)]
@@ -67,7 +68,7 @@ impl Drawing {
 
         let panes = container(row![cutaway, right].spacing(1)).padding(inset() as f32);
 
-        stack![sheet, panes].into()
+        stack![sheet, panes].boxed()
     }
 }
 
@@ -154,14 +155,14 @@ fn plate<'a>(pinned: Option<Pin>) -> Element<'a, Message> {
 
     let fields = row(fields
         .into_iter()
-        .map(|(name, value)| field(name, label(value)).into()))
+        .map(|(name, value)| field(name, label(value)).boxed()))
     .spacing(px::WIDE);
 
     container(column![heading, fields].spacing(px::GAP))
         .padding([px::GAP, px::WIDE])
         .width(Length::Fill)
         .height(PLATE as f32)
-        .into()
+        .boxed()
 }
 
 /// A cache that is cleared when its key changes.

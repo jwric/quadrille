@@ -16,21 +16,28 @@ graticule = { path = "crates/graticule" }
 # itself.
 [workspace.dependencies.iced]
 git = "https://github.com/jwric/iced"
-branch = "0.14-pixel-scale"
+branch = "0.15-pixel-scale"
 default-features = false
 
 [workspace.dependencies.iced_widget]
 git = "https://github.com/jwric/iced"
-branch = "0.14-pixel-scale"
+branch = "0.15-pixel-scale"
+
+# `crisp` is a feature of the core: it decides whether quads, text and strokes
+# snap to the grid by default.
+[workspace.dependencies.iced_core]
+git = "https://github.com/jwric/iced"
+branch = "0.15-pixel-scale"
 
 [workspace.dependencies.iced_test]
 git = "https://github.com/jwric/iced"
-branch = "0.14-pixel-scale"
+branch = "0.15-pixel-scale"
 
 # To work on the fork itself, point these at a local checkout:
 # [patch.'https://github.com/jwric/iced']
 # iced = { path = "../iced" }
 # iced_widget = { path = "../iced/widget" }
+# iced_core = { path = "../iced/core" }
 # iced_test = { path = "../iced/test" }
 
 [profile.release]

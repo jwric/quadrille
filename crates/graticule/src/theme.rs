@@ -104,8 +104,8 @@ impl Base for Theme {
         }
     }
 
-    fn palette(&self) -> Option<theme::Palette> {
-        Some(theme::Palette {
+    fn seed(&self) -> Option<theme::palette::Seed> {
+        Some(theme::palette::Seed {
             background: self.palette.ground,
             text: self.palette.ink,
             primary: self.palette.accent,

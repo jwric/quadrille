@@ -2,7 +2,7 @@
 use iced_widget::core::layout::{self, Layout};
 use iced_widget::core::renderer;
 use iced_widget::core::widget::Tree;
-use iced_widget::core::{Color, Element, Length, Point, Rectangle, Size, Widget, mouse};
+use iced_widget::core::{Color, Length, Point, Rectangle, Size, Widget, mouse};
 
 use crate::draw::Sprite;
 use crate::px;
@@ -41,6 +41,8 @@ impl<Theme> Icon<Theme> {
     }
 }
 
+impl<Theme> iced_widget::core::widget::Meta for Icon<Theme> {}
+
 impl<Message, Theme, Renderer> Widget<Message, Theme, Renderer> for Icon<Theme>
 where
     Renderer: iced_widget::core::Renderer,
@@ -52,17 +54,12 @@ where
         )
     }
 
-    fn layout(
-        &mut self,
-        _tree: &mut Tree,
-        _renderer: &Renderer,
-        limits: &layout::Limits,
-    ) -> layout::Node {
-        layout::atomic(
+    fn layout(&mut self, tree: &mut Tree, _renderer: &Renderer, limits: &layout::Limits) {
+        tree.size = layout::atomic(
             limits,
             self.sprite.width() as f32,
             self.height.unwrap_or(self.sprite.height() as f32),
-        )
+        );
     }
 
     fn draw(
@@ -71,7 +68,7 @@ where
         renderer: &mut Renderer,
         theme: &Theme,
         style: &renderer::Style,
-        layout: Layout<'_>,
+        layout: Layout,
         _cursor: mouse::Cursor,
         _viewport: &Rectangle,
     ) {
@@ -92,15 +89,5 @@ where
                 color,
             );
         }
-    }
-}
-
-impl<'a, Message, Theme, Renderer> From<Icon<Theme>> for Element<'a, Message, Theme, Renderer>
-where
-    Theme: 'a,
-    Renderer: iced_widget::core::Renderer,
-{
-    fn from(icon: Icon<Theme>) -> Self {
-        Element::new(icon)
     }
 }

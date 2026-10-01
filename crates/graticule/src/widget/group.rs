@@ -1,9 +1,9 @@
 //! A group of widgets under a named rule.
 use iced_widget::core::layout::{self, Layout};
 use iced_widget::core::renderer;
-use iced_widget::core::widget::{Operation, Tree};
-use iced_widget::core::{Clipboard, Shell, Widget, mouse, overlay};
-use iced_widget::core::{Color, Element, Event, Length, Point, Rectangle, Size, Vector};
+use iced_widget::core::widget::{Meta, Operation, Tree, tree};
+use iced_widget::core::{Color, Event, Length, Point, Rectangle, Size, Vector};
+use iced_widget::core::{Shell, Widget, mouse, overlay};
 
 use crate::{Face, px};
 
@@ -12,13 +12,13 @@ use crate::{Face, px};
 ///
 /// There are no sides and no bottom. The rule says where the group starts;
 /// the space around it says where it ends.
-pub struct Group<'a, Message, Theme, Renderer>
+pub struct Group<'a, W, Theme>
 where
     Theme: Catalog,
 {
     name: String,
     face: Face,
-    content: Element<'a, Message, Theme, Renderer>,
+    content: W,
     width: Length,
     height: Length,
     spacing: u16,
@@ -26,27 +26,20 @@ where
     class: Theme::Class<'a>,
 }
 
-impl<'a, Message, Theme, Renderer> Group<'a, Message, Theme, Renderer>
+impl<'a, W, Theme> Group<'a, W, Theme>
 where
     Theme: Catalog,
-    Renderer: iced_widget::core::Renderer,
 {
     /// Creates a [`Group`] of `content` named `name`.
     ///
     /// Like a container, a group fills the space its content fills.
-    pub fn new(
-        name: impl Into<String>,
-        content: impl Into<Element<'a, Message, Theme, Renderer>>,
-    ) -> Self {
-        let content = content.into();
-        let size = content.as_widget().size_hint();
-
+    pub fn new(name: impl Into<String>, content: W) -> Self {
         Self {
             name: name.into(),
             face: Face::BODY,
             content,
-            width: size.width.fluid(),
-            height: size.height.fluid(),
+            width: Length::Fit,
+            height: Length::Fit,
             spacing: px::GAP as u16,
             drop: 3,
             class: Theme::default(),
@@ -101,73 +94,66 @@ where
     }
 }
 
-impl<Message, Theme, Renderer> Widget<Message, Theme, Renderer>
-    for Group<'_, Message, Theme, Renderer>
+impl<W, Theme> Meta for Group<'_, W, Theme> where Theme: Catalog {}
+
+impl<W, Message, Theme, Renderer> Widget<Message, Theme, Renderer> for Group<'_, W, Theme>
 where
     Theme: Catalog,
-    Renderer: iced_widget::core::text::Renderer<Font = iced_widget::core::Font>,
+    Renderer: iced_widget::core::text::Renderer,
+    W: Widget<Message, Theme, Renderer>,
 {
-    fn tag(&self) -> iced_widget::core::widget::tree::Tag {
-        self.content.as_widget().tag()
+    fn tag(&self) -> tree::Tag {
+        self.content.tag()
     }
 
-    fn state(&self) -> iced_widget::core::widget::tree::State {
-        self.content.as_widget().state()
+    fn state(&self) -> tree::State {
+        self.content.state()
     }
 
-    fn children(&self) -> Vec<Tree> {
-        self.content.as_widget().children()
-    }
+    fn diff(&mut self, tree: &mut Tree) {
+        tree.diff_children(std::slice::from_mut(&mut self.content));
 
-    fn diff(&self, tree: &mut Tree) {
-        self.content.as_widget().diff(tree);
+        let size = self.content.size();
+        self.width = self.width.stack(size.width);
+        self.height = self.height.stack(size.height);
     }
 
     fn size(&self) -> Size<Length> {
         Size::new(self.width, self.height)
     }
 
-    fn layout(
-        &mut self,
-        tree: &mut Tree,
-        renderer: &Renderer,
-        limits: &layout::Limits,
-    ) -> layout::Node {
+    fn layout(&mut self, tree: &mut Tree, renderer: &Renderer, limits: &layout::Limits) {
         let header = self.header();
         let limits = limits.width(self.width).height(self.height);
 
-        let content = self
-            .content
-            .as_widget_mut()
-            .layout(tree, renderer, &limits.shrink(Size::new(0.0, header)))
-            .move_to(Point::new(0.0, header));
+        let content = &mut tree.children[0];
+
+        self.content
+            .layout(content, renderer, &limits.shrink(Size::new(0.0, header)));
+        content.translation = Vector::new(0.0, header);
 
         let intrinsic = Size::new(
-            content.size().width.max(self.min_width()),
-            content.size().height + header,
+            content.size.width.max(self.min_width()),
+            content.size.height + header,
         );
 
-        layout::Node::with_children(
-            limits.resolve(self.width, self.height, intrinsic),
-            vec![content],
-        )
+        tree.size = limits.resolve(self.width, self.height, intrinsic);
     }
 
     fn operate(
         &mut self,
         tree: &mut Tree,
-        layout: Layout<'_>,
+        layout: Layout,
+        viewport: &Rectangle,
         renderer: &Renderer,
         operation: &mut dyn Operation,
     ) {
-        operation.container(None, layout.bounds());
+        operation.container(None, layout.bounds(), viewport);
         operation.traverse(&mut |operation| {
-            self.content.as_widget_mut().operate(
-                tree,
-                layout.children().next().unwrap(),
-                renderer,
-                operation,
-            );
+            let (layout, tree) = layout.iter_mut(&mut tree.children).next().unwrap();
+
+            self.content
+                .operate(tree, layout, viewport, renderer, operation);
         });
     }
 
@@ -175,40 +161,30 @@ where
         &mut self,
         tree: &mut Tree,
         event: &Event,
-        layout: Layout<'_>,
+        layout: Layout,
         cursor: mouse::Cursor,
         renderer: &Renderer,
-        clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
     ) {
-        self.content.as_widget_mut().update(
-            tree,
-            event,
-            layout.children().next().unwrap(),
-            cursor,
-            renderer,
-            clipboard,
-            shell,
-            viewport,
-        );
+        let (layout, tree) = layout.iter_mut(&mut tree.children).next().unwrap();
+
+        self.content
+            .update(tree, event, layout, cursor, renderer, shell, viewport);
     }
 
     fn mouse_interaction(
         &self,
         tree: &Tree,
-        layout: Layout<'_>,
+        layout: Layout,
         cursor: mouse::Cursor,
         viewport: &Rectangle,
         renderer: &Renderer,
     ) -> mouse::Interaction {
-        self.content.as_widget().mouse_interaction(
-            tree,
-            layout.children().next().unwrap(),
-            cursor,
-            viewport,
-            renderer,
-        )
+        let (layout, tree) = layout.iter(&tree.children).next().unwrap();
+
+        self.content
+            .mouse_interaction(tree, layout, cursor, viewport, renderer)
     }
 
     fn draw(
@@ -217,7 +193,7 @@ where
         renderer: &mut Renderer,
         theme: &Theme,
         style: &renderer::Style,
-        layout: Layout<'_>,
+        layout: Layout,
         cursor: mouse::Cursor,
         viewport: &Rectangle,
     ) {
@@ -253,32 +229,25 @@ where
         fill(renderer, left, y + 1, 1, drop, colors.rule);
         fill(renderer, right, y + 1, 1, drop, colors.rule);
 
-        self.content.as_widget().draw(
-            tree,
-            renderer,
-            theme,
-            style,
-            layout.children().next().unwrap(),
-            cursor,
-            viewport,
-        );
+        let (layout, tree) = layout.iter(&tree.children).next().unwrap();
+
+        self.content
+            .draw(tree, renderer, theme, style, layout, cursor, viewport);
     }
 
     fn overlay<'b>(
         &'b mut self,
         tree: &'b mut Tree,
-        layout: Layout<'b>,
+        layout: Layout,
         renderer: &Renderer,
         viewport: &Rectangle,
         translation: Vector,
-    ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
-        self.content.as_widget_mut().overlay(
-            tree,
-            layout.children().next().unwrap(),
-            renderer,
-            viewport,
-            translation,
-        )
+        window: Size,
+    ) -> Vec<overlay::Element<'b, Message, Theme, Renderer>> {
+        let (layout, tree) = layout.iter_mut(&mut tree.children).next().unwrap();
+
+        self.content
+            .overlay(tree, layout, renderer, viewport, translation, window)
     }
 }
 
@@ -305,18 +274,6 @@ fn fill<Renderer: iced_widget::core::Renderer>(
         },
         color,
     );
-}
-
-impl<'a, Message, Theme, Renderer> From<Group<'a, Message, Theme, Renderer>>
-    for Element<'a, Message, Theme, Renderer>
-where
-    Message: 'a,
-    Theme: Catalog + 'a,
-    Renderer: iced_widget::core::text::Renderer<Font = iced_widget::core::Font> + 'a,
-{
-    fn from(group: Group<'a, Message, Theme, Renderer>) -> Self {
-        Element::new(group)
-    }
 }
 
 /// The appearance of a [`Group`].

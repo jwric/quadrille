@@ -34,7 +34,7 @@ pub const CANDIDATES: &[Candidate] = &[
         face: Face::new(
             Font {
                 weight: Weight::Bold,
-                ..Font::with_name("Departure Mono")
+                ..Font::new("Departure Mono")
             },
             Metrics {
                 em: 11,
@@ -58,7 +58,7 @@ pub const CANDIDATES: &[Candidate] = &[
         face: Face::new(
             Font {
                 weight: Weight::Normal,
-                ..Font::with_name("Pixel Code")
+                ..Font::new("Pixel Code")
             },
             Metrics {
                 em: 9,
@@ -82,7 +82,7 @@ pub const CANDIDATES: &[Candidate] = &[
         face: Face::new(
             Font {
                 weight: Weight::Normal,
-                ..Font::with_name("Fixed 5x7")
+                ..Font::new("Fixed 5x7")
             },
             Metrics {
                 em: 7,
@@ -106,7 +106,7 @@ pub const CANDIDATES: &[Candidate] = &[
         face: Face::new(
             Font {
                 weight: Weight::Normal,
-                ..Font::with_name("Fixed 6x10")
+                ..Font::new("Fixed 6x10")
             },
             Metrics {
                 em: 10,
@@ -130,7 +130,7 @@ pub const CANDIDATES: &[Candidate] = &[
         face: Face::new(
             Font {
                 weight: Weight::Normal,
-                ..Font::with_name("Terminus 12")
+                ..Font::new("Terminus 12")
             },
             Metrics {
                 em: 12,
@@ -154,7 +154,7 @@ pub const CANDIDATES: &[Candidate] = &[
         face: Face::new(
             Font {
                 weight: Weight::Bold,
-                ..Font::with_name("Terminus 12")
+                ..Font::new("Terminus 12")
             },
             Metrics {
                 em: 12,
@@ -178,7 +178,7 @@ pub const CANDIDATES: &[Candidate] = &[
         face: Face::new(
             Font {
                 weight: Weight::Normal,
-                ..Font::with_name("Greybeard 11px")
+                ..Font::new("Greybeard 11px")
             },
             Metrics {
                 em: 11,
@@ -202,7 +202,7 @@ pub const CANDIDATES: &[Candidate] = &[
         face: Face::new(
             Font {
                 weight: Weight::Bold,
-                ..Font::with_name("Greybeard 11px")
+                ..Font::new("Greybeard 11px")
             },
             Metrics {
                 em: 11,
@@ -226,7 +226,7 @@ pub const CANDIDATES: &[Candidate] = &[
         face: Face::new(
             Font {
                 weight: Weight::Normal,
-                ..Font::with_name("scientifica")
+                ..Font::new("scientifica")
             },
             Metrics {
                 em: 11,
@@ -250,7 +250,7 @@ pub const CANDIDATES: &[Candidate] = &[
         face: Face::new(
             Font {
                 weight: Weight::Normal,
-                ..Font::with_name("Spleen 5x8")
+                ..Font::new("Spleen 5x8")
             },
             Metrics {
                 em: 8,
@@ -274,7 +274,7 @@ pub const CANDIDATES: &[Candidate] = &[
         face: Face::new(
             Font {
                 weight: Weight::Normal,
-                ..Font::with_name("Spleen 6x12")
+                ..Font::new("Spleen 6x12")
             },
             Metrics {
                 em: 12,
@@ -298,7 +298,7 @@ pub const CANDIDATES: &[Candidate] = &[
         face: Face::new(
             Font {
                 weight: Weight::Normal,
-                ..Font::with_name("CozetteVector")
+                ..Font::new("CozetteVector")
             },
             Metrics {
                 em: 13,
@@ -322,7 +322,7 @@ pub const CANDIDATES: &[Candidate] = &[
         face: Face::new(
             Font {
                 weight: Weight::Normal,
-                ..Font::with_name("GohuFont 11")
+                ..Font::new("GohuFont 11")
             },
             Metrics {
                 em: 11,
@@ -346,7 +346,7 @@ pub const CANDIDATES: &[Candidate] = &[
         face: Face::new(
             Font {
                 weight: Weight::Normal,
-                ..Font::with_name("Px437 Portfolio 6x8")
+                ..Font::new("Px437 Portfolio 6x8")
             },
             Metrics {
                 em: 8,
@@ -370,7 +370,7 @@ pub const CANDIDATES: &[Candidate] = &[
         face: Face::new(
             Font {
                 weight: Weight::Normal,
-                ..Font::with_name("PxPlus HP 100LX 6x8")
+                ..Font::new("PxPlus HP 100LX 6x8")
             },
             Metrics {
                 em: 8,
@@ -394,7 +394,7 @@ pub const CANDIDATES: &[Candidate] = &[
         face: Face::new(
             Font {
                 weight: Weight::Normal,
-                ..Font::with_name("unscii")
+                ..Font::new("unscii")
             },
             Metrics {
                 em: 8,

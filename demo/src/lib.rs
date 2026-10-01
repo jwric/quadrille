@@ -12,6 +12,7 @@ mod shell;
 mod telemetry;
 
 use graticule::{Element, Theme};
+use iced::Widget as _;
 use iced::keyboard::{self, key};
 use iced::time::{self, Duration, Instant};
 use iced::{Subscription, Task};
@@ -160,10 +161,14 @@ impl App {
     pub fn view(&self) -> Element<'_, Message> {
         let page = match self.page {
             Page::Hud => hud::view(&self.telemetry, self.video),
-            Page::Scope => self.scope.view(&self.telemetry).map(Message::Scope),
-            Page::Drawing => self.drawing.view(&self.telemetry).map(Message::Drawing),
-            Page::Kit => self.kit.view().map(Message::Kit),
-            Page::Lab => self.lab.view().map(Message::Lab),
+            Page::Scope => self.scope.view(&self.telemetry).map(Message::Scope).boxed(),
+            Page::Drawing => self
+                .drawing
+                .view(&self.telemetry)
+                .map(Message::Drawing)
+                .boxed(),
+            Page::Kit => self.kit.view().map(Message::Kit).boxed(),
+            Page::Lab => self.lab.view().map(Message::Lab).boxed(),
         };
 
         shell::view(self.page, &self.theme(), &self.telemetry, page)

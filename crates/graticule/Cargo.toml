@@ -12,7 +12,8 @@ include = ["src/**", "fonts/**", "README.md"]
 [dependencies]
 # The widget layer alone: renderers, windowing and executors are the
 # application's choice. `image` is for rasters built from RGBA.
-iced_widget = { workspace = true, features = ["advanced", "canvas", "crisp", "image"] }
+iced_widget = { workspace = true, features = ["advanced", "canvas", "image"] }
+iced_core = { workspace = true, features = ["crisp"] }
 
 [dev-dependencies]
 iced = { workspace = true, features = ["tiny-skia", "thread-pool", "x11", "wayland"] }

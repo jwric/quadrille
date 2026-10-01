@@ -382,6 +382,8 @@ where
             align_x: Alignment::Left,
             align_y: alignment::Vertical::Top,
             shaping: Shaping::Basic,
+            wrapping: iced_widget::core::text::Wrapping::None,
+            ellipsis: iced_widget::core::text::Ellipsis::None,
         });
     }
 

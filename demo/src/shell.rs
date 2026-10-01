@@ -5,6 +5,7 @@ use iced::widget::{column, container, row, space};
 use iced::{Alignment, Length};
 
 use crate::{Message, Page, Telemetry};
+use iced::Widget as _;
 
 /// `page` in the chassis.
 pub fn view<'a>(
@@ -20,7 +21,7 @@ pub fn view<'a>(
         divider(),
         keys(page, theme),
     ]
-    .into()
+    .boxed()
 }
 
 fn status<'a>(page: Page, telemetry: &Telemetry) -> Element<'a, Message> {
@@ -52,22 +53,22 @@ fn status<'a>(page: Page, telemetry: &Telemetry) -> Element<'a, Message> {
         .padding([px::TIGHT, px::WIDE])
         .width(Length::Fill)
         .style(style::container::ground)
-        .into()
+        .boxed()
 }
 
 fn keys<'a>(page: Page, theme: &Theme) -> Element<'a, Message> {
     let pages = Page::ALL.into_iter().enumerate().map(|(i, target)| {
         soft_key(format!("F{} {}", i + 1, target.legend()), target == page)
             .on_press(Message::Show(target))
-            .into()
+            .boxed()
     });
 
     let theme = soft_key(format!("F6 THEME {}", theme.name().to_uppercase()), false)
         .on_press(Message::NextTheme);
 
     let bar = row(pages)
-        .push(space::horizontal())
-        .push(theme)
+        .push(space::horizontal().boxed())
+        .push(theme.boxed())
         .spacing(px::GAP)
         .align_y(Alignment::Center);
 
@@ -75,5 +76,5 @@ fn keys<'a>(page: Page, theme: &Theme) -> Element<'a, Message> {
         .padding([px::TIGHT, px::WIDE])
         .width(Length::Fill)
         .style(style::container::ground)
-        .into()
+        .boxed()
 }

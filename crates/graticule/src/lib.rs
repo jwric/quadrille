@@ -1,6 +1,6 @@
 //! A pixel-perfect retro UI toolkit for [iced].
 //!
-//! Graticule targets the `0.14-pixel-scale` iced fork, which lays an interface
+//! Graticule targets the `0.15-pixel-scale` iced fork, which lays an interface
 //! out in virtual pixels and upscales it nearest-neighbour. On top of that it
 //! provides:
 //!
@@ -14,12 +14,12 @@
 //! the pixel scale and antialiasing match what the toolkit is drawn for:
 //!
 //! ```no_run
-//! # use graticule::{Element, Theme};
+//! # use graticule::Theme;
 //! # #[derive(Default)] struct App;
 //! # #[derive(Debug, Clone)] enum Message {}
 //! # impl App {
 //! #     fn update(&mut self, _message: Message) {}
-//! #     fn view(&self) -> Element<'_, Message> { graticule::widget::label("hello").into() }
+//! #     fn view(&self) -> impl iced::Widget<Message, Theme> { graticule::widget::label("hello") }
 //! # }
 //! pub fn main() -> iced::Result {
 //!     iced::application(App::default, App::update, App::view)
@@ -62,8 +62,8 @@ pub const LOGICAL_PER_VIRTUAL: u32 = 2;
 pub fn settings() -> iced_widget::core::Settings {
     iced_widget::core::Settings {
         fonts: fonts::ALL.iter().map(|font| (*font).into()).collect(),
-        default_font: Face::BODY.font,
-        default_text_size: f32::from(Face::BODY.size()).into(),
+        font: Face::BODY.font,
+        text_size: f32::from(Face::BODY.size()).into(),
         antialiasing: false,
         pixel_scale: iced_widget::core::PixelScaleMode::Auto(LOGICAL_PER_VIRTUAL),
         ..iced_widget::core::Settings::default()

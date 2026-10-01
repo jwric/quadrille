@@ -1,7 +1,7 @@
 use std::ops::RangeInclusive;
 
 use iced_widget::canvas::{self, Frame, Geometry};
-use iced_widget::core::{Element, Length, Point, Rectangle, mouse};
+use iced_widget::core::{Length, Point, Rectangle, mouse};
 use iced_widget::graphics::geometry;
 
 use crate::Theme;
@@ -123,14 +123,4 @@ where
     }
 }
 
-impl<'a, Message, Renderer> From<Dial> for Element<'a, Message, Theme, Renderer>
-where
-    Message: 'a,
-    Renderer: geometry::Renderer + 'a,
-{
-    fn from(dial: Dial) -> Self {
-        let (width, height) = (dial.width, dial.height);
-
-        iced_widget::canvas(dial).width(width).height(height).into()
-    }
-}
+canvas_widget!(Dial);

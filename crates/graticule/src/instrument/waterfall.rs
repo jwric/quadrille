@@ -5,7 +5,7 @@ use std::sync::atomic::{AtomicU64, Ordering};
 
 use iced_widget::canvas::{self, Cache, Geometry, Image};
 use iced_widget::core::image::{FilterMethod, Handle};
-use iced_widget::core::{Color, Element, Length, Point, Rectangle, Size, mouse};
+use iced_widget::core::{Color, Length, Point, Rectangle, Size, mouse};
 use iced_widget::graphics::geometry;
 
 use super::keep;
@@ -422,8 +422,7 @@ where
                     Size::new(columns as f32, rows as f32),
                 ),
                 Image::new(Handle::from_rgba(columns as u32, rows as u32, pixels))
-                    .filter_method(FilterMethod::Nearest)
-                    .snap(true),
+                    .filter_method(FilterMethod::Nearest),
             );
         });
 
@@ -495,20 +494,7 @@ impl<Renderer: geometry::Renderer> Default for State<Renderer> {
     }
 }
 
-impl<'a, Message, Renderer> From<Waterfall<'a>> for Element<'a, Message, Theme, Renderer>
-where
-    Message: 'a,
-    Renderer: geometry::Renderer + 'static,
-{
-    fn from(waterfall: Waterfall<'a>) -> Self {
-        let (width, height) = (waterfall.width, waterfall.height);
-
-        iced_widget::canvas(waterfall)
-            .width(width)
-            .height(height)
-            .into()
-    }
-}
+canvas_widget!(Waterfall<'a>);
 
 #[cfg(test)]
 mod tests {

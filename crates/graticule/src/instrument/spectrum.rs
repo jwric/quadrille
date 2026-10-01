@@ -3,7 +3,7 @@ use std::cell::RefCell;
 use std::ops::RangeInclusive;
 
 use iced_widget::canvas::{self, Cache, Frame, Geometry};
-use iced_widget::core::{Element, Length, Point, Rectangle, mouse};
+use iced_widget::core::{Length, Point, Rectangle, mouse};
 use iced_widget::graphics::geometry;
 
 use super::keep;
@@ -545,20 +545,7 @@ impl<Renderer: geometry::Renderer> Default for State<Renderer> {
     }
 }
 
-impl<'a, Message, Renderer> From<Spectrum<'a>> for Element<'a, Message, Theme, Renderer>
-where
-    Message: 'a,
-    Renderer: geometry::Renderer + 'static,
-{
-    fn from(spectrum: Spectrum<'a>) -> Self {
-        let (width, height) = (spectrum.width, spectrum.height);
-
-        iced_widget::canvas(spectrum)
-            .width(width)
-            .height(height)
-            .into()
-    }
-}
+canvas_widget!(Spectrum<'a>);
 
 #[cfg(test)]
 mod tests {

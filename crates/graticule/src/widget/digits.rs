@@ -4,10 +4,9 @@ use std::ops::RangeInclusive;
 use iced_widget::core::layout::{self, Layout};
 use iced_widget::core::renderer;
 use iced_widget::core::text::Renderer as TextRenderer;
+use iced_widget::core::widget::Meta;
 use iced_widget::core::widget::tree::{self, Tree};
-use iced_widget::core::{
-    Clipboard, Color, Element, Event, Font, Length, Point, Rectangle, Shell, Size, Widget, mouse,
-};
+use iced_widget::core::{Color, Event, Length, Point, Rectangle, Shell, Size, Widget, mouse};
 
 use crate::{Face, px};
 
@@ -125,10 +124,12 @@ struct State {
     travel: f32,
 }
 
+impl<Message, Theme> Meta for Digits<'_, Message, Theme> where Theme: Catalog {}
+
 impl<Message, Theme, Renderer> Widget<Message, Theme, Renderer> for Digits<'_, Message, Theme>
 where
     Theme: Catalog,
-    Renderer: TextRenderer<Font = Font>,
+    Renderer: TextRenderer,
 {
     fn tag(&self) -> tree::Tag {
         tree::Tag::of::<State>()
@@ -139,28 +140,22 @@ where
     }
 
     fn size(&self) -> Size<Length> {
-        Size::new(Length::Shrink, Length::Shrink)
+        Size::new(Length::Fit, Length::Fit)
     }
 
-    fn layout(
-        &mut self,
-        _tree: &mut Tree,
-        _renderer: &Renderer,
-        limits: &layout::Limits,
-    ) -> layout::Node {
+    fn layout(&mut self, tree: &mut Tree, _renderer: &Renderer, limits: &layout::Limits) {
         let width = self.cells().len() as f32 * f32::from(self.face.advance());
 
-        layout::atomic(limits, width, f32::from(self.face.line()))
+        tree.size = layout::atomic(limits, width, f32::from(self.face.line()));
     }
 
     fn update(
         &mut self,
         tree: &mut Tree,
         event: &Event,
-        layout: Layout<'_>,
+        layout: Layout,
         cursor: mouse::Cursor,
         _renderer: &Renderer,
-        _clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
         _viewport: &Rectangle,
     ) {
@@ -223,7 +218,7 @@ where
     fn mouse_interaction(
         &self,
         tree: &Tree,
-        _layout: Layout<'_>,
+        _layout: Layout,
         _cursor: mouse::Cursor,
         _viewport: &Rectangle,
         _renderer: &Renderer,
@@ -243,7 +238,7 @@ where
         renderer: &mut Renderer,
         theme: &Theme,
         _style: &renderer::Style,
-        layout: Layout<'_>,
+        layout: Layout,
         _cursor: mouse::Cursor,
         viewport: &Rectangle,
     ) {
@@ -316,18 +311,6 @@ fn notches(travel: &mut f32, delta: mouse::ScrollDelta) -> i32 {
     *travel -= whole;
 
     whole as i32
-}
-
-impl<'a, Message, Theme, Renderer> From<Digits<'a, Message, Theme>>
-    for Element<'a, Message, Theme, Renderer>
-where
-    Message: 'a,
-    Theme: Catalog + 'a,
-    Renderer: TextRenderer<Font = Font> + 'a,
-{
-    fn from(digits: Digits<'a, Message, Theme>) -> Self {
-        Element::new(digits)
-    }
 }
 
 /// The appearance of [`Digits`].

@@ -11,7 +11,6 @@
 //! [`Face::new`] checks at compile time.
 use std::borrow::Cow;
 
-use iced_widget::core::text::Renderer as TextRenderer;
 use iced_widget::core::{Font, Padding};
 use iced_widget::text::{self, IntoFragment, LineHeight, Shaping, Wrapping};
 
@@ -79,35 +78,21 @@ impl Face {
     /// Two pixels over the capitals and two under the baseline, which is room
     /// for accents and descenders and nothing more.
     pub const BODY: Self = Self::new(
-        Font::with_name("Departure Mono Tight"),
+        Font::new("Departure Mono Tight"),
         Metrics::DEPARTURE_MONO_TIGHT,
         1,
         12,
     );
 
     /// The prose face: Departure Mono in its own 7 × 14 cell, for running text.
-    pub const PROSE: Self = Self::new(
-        Font::with_name("Departure Mono"),
-        Metrics::DEPARTURE_MONO,
-        1,
-        14,
-    );
+    pub const PROSE: Self = Self::new(Font::new("Departure Mono"), Metrics::DEPARTURE_MONO, 1, 14);
 
     /// Departure Mono at twice its size in a 14 × 24 cell, for readouts.
-    pub const DISPLAY: Self = Self::new(
-        Font::with_name("Departure Mono"),
-        Metrics::DEPARTURE_MONO,
-        2,
-        24,
-    );
+    pub const DISPLAY: Self =
+        Self::new(Font::new("Departure Mono"), Metrics::DEPARTURE_MONO, 2, 24);
 
     /// Departure Mono at three times its size in a 21 × 36 cell.
-    pub const HERO: Self = Self::new(
-        Font::with_name("Departure Mono"),
-        Metrics::DEPARTURE_MONO,
-        3,
-        36,
-    );
+    pub const HERO: Self = Self::new(Font::new("Departure Mono"), Metrics::DEPARTURE_MONO, 3, 36);
 
     /// Creates a [`Face`] for a font with the given [`Metrics`], set at
     /// `scale` times its native size in lines `line` pixels tall.
@@ -243,6 +228,10 @@ impl Face {
             align_y: iced_widget::core::alignment::Vertical::Top,
             shaping: Shaping::Basic,
             wrapping: Wrapping::None,
+            ellipsis: text::Ellipsis::None,
+            // A pixel face is set at its native size on a whole line, so there
+            // is nothing for metrics hinting to round.
+            hint_factor: None,
         }
     }
 
@@ -279,13 +268,9 @@ impl Face {
 
     /// A text widget set in this face: native size, whole line height, no
     /// wrapping.
-    pub fn text<'a, Theme, Renderer>(
-        self,
-        fragment: impl IntoFragment<'a>,
-    ) -> text::Text<'a, Theme, Renderer>
+    pub fn text<'a, Theme>(self, fragment: impl IntoFragment<'a>) -> text::Text<'a, Theme>
     where
         Theme: text::Catalog,
-        Renderer: TextRenderer<Font = Font>,
     {
         text::Text::new(fragment)
             .font(self.font)

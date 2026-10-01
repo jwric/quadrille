@@ -15,6 +15,7 @@ use iced::widget::{button, canvas as canvas_widget, column, container, row, spac
 use iced::{Alignment, Length, Point, Rectangle, Renderer, mouse};
 
 use crate::VIEWPORT;
+use iced::Widget as _;
 
 /// A font the lab compares, at the size and line where it is crisp.
 #[derive(Debug, Clone, Copy)]
@@ -135,7 +136,7 @@ impl Lab {
                     .width(Length::Fill)
                     .style(style::button::position(selected))
                     .on_press(Message::Select(i))
-                    .into()
+                    .boxed()
                 }))
                 .spacing(px::HAIR),
             )
@@ -180,7 +181,7 @@ impl Lab {
                 .width(Length::FillPortion(2)),
             ]
             .spacing(px::FAR)
-            .into(),
+            .boxed(),
             View::Ladder => ladder(self.selected),
             View::System => system(candidate(self.small), chosen, self.small),
         };
@@ -196,7 +197,7 @@ impl Lab {
         .width(Length::Fill)
         .height(Length::Fill)
         .style(style::container::ground)
-        .into()
+        .boxed()
     }
 
     fn board(&self, face: Face) -> Element<'_, Message> {
@@ -214,11 +215,11 @@ impl Lab {
                         style::button::ghost
                     })
                     .on_press(Message::Glyph(glyph))
-                    .into()
+                    .boxed()
             }))
-            .into()
+            .boxed()
         }))
-        .into()
+        .boxed()
     }
 }
 
@@ -240,7 +241,7 @@ fn specimen<'a>(candidate: Candidate) -> Element<'a, Message> {
                 ]
                 .spacing(gap)
                 .align_y(Alignment::Center)
-                .into()
+                .boxed()
             }),
     )
     .spacing(px::TIGHT);
@@ -297,7 +298,7 @@ fn specimen<'a>(candidate: Candidate) -> Element<'a, Message> {
             "└──────┴──────┘",
         ]
         .into_iter()
-        .map(|line| table_face.text(line).into()),
+        .map(|line| table_face.text(line)),
     );
 
     let (columns, rows) = density(face);
@@ -331,7 +332,7 @@ fn specimen<'a>(candidate: Candidate) -> Element<'a, Message> {
     .face(face)
     .width(Length::FillPortion(3))
     .height(Length::Fill)
-    .into()
+    .boxed()
 }
 
 /// How many cells of `face` the showcase's page area holds.
@@ -411,7 +412,7 @@ fn system<'a>(small: Candidate, body: Candidate, index: usize) -> Element<'a, Me
                 ]
                 .spacing(gap)
                 .align_y(Alignment::Center)
-                .into()
+                .boxed()
             }),
     )
     .spacing(px::TIGHT);
@@ -448,7 +449,7 @@ fn system<'a>(small: Candidate, body: Candidate, index: usize) -> Element<'a, Me
         .height(Length::Fill),
     ]
     .spacing(px::WIDE)
-    .into()
+    .boxed()
 }
 
 /// Every candidate, set on the same line.
@@ -473,12 +474,12 @@ fn ladder<'a>(selected: usize) -> Element<'a, Message> {
             }),
             face.text(SAMPLE),
         ]
-        .into()
+        .boxed()
     });
 
     widget::scroll(column(rows).spacing(px::GAP).width(Length::Fill))
         .height(Length::Fill)
-        .into()
+        .boxed()
 }
 
 /// One glyph blown up over its metrics.

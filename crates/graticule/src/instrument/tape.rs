@@ -1,7 +1,7 @@
 use std::ops::RangeInclusive;
 
 use iced_widget::canvas::{self, Frame, Geometry};
-use iced_widget::core::{Element, Length, Point, Rectangle, mouse};
+use iced_widget::core::{Length, Point, Rectangle, mouse};
 use iced_widget::graphics::geometry;
 
 use crate::draw::{Anchor, Direction, Pen, rectangle};
@@ -208,14 +208,4 @@ where
     }
 }
 
-impl<'a, Message, Renderer> From<Tape<'a>> for Element<'a, Message, Theme, Renderer>
-where
-    Message: 'a,
-    Renderer: geometry::Renderer + 'a,
-{
-    fn from(tape: Tape<'a>) -> Self {
-        let (width, height) = (tape.width, tape.height);
-
-        iced_widget::canvas(tape).width(width).height(height).into()
-    }
-}
+canvas_widget!(Tape<'a>);

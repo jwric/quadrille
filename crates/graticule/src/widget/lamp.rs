@@ -2,7 +2,7 @@
 use iced_widget::core::layout::{self, Layout};
 use iced_widget::core::renderer;
 use iced_widget::core::widget::Tree;
-use iced_widget::core::{Color, Element, Length, Rectangle, Size};
+use iced_widget::core::{Color, Length, Rectangle, Size};
 use iced_widget::core::{Widget, mouse};
 
 use crate::px;
@@ -56,6 +56,8 @@ where
     }
 }
 
+impl<Theme> iced_widget::core::widget::Meta for Lamp<Theme> where Theme: Catalog {}
+
 impl<Message, Theme, Renderer> Widget<Message, Theme, Renderer> for Lamp<Theme>
 where
     Theme: Catalog,
@@ -65,13 +67,8 @@ where
         Size::new(Length::Fixed(self.size), Length::Fixed(self.size))
     }
 
-    fn layout(
-        &mut self,
-        _tree: &mut Tree,
-        _renderer: &Renderer,
-        limits: &layout::Limits,
-    ) -> layout::Node {
-        layout::atomic(limits, self.size, self.size)
+    fn layout(&mut self, tree: &mut Tree, _renderer: &Renderer, limits: &layout::Limits) {
+        tree.size = layout::atomic(limits, self.size, self.size);
     }
 
     fn draw(
@@ -80,7 +77,7 @@ where
         renderer: &mut Renderer,
         theme: &Theme,
         _style: &renderer::Style,
-        layout: Layout<'_>,
+        layout: Layout,
         _cursor: mouse::Cursor,
         _viewport: &Rectangle,
     ) {
@@ -99,16 +96,6 @@ where
             },
             style.glass,
         );
-    }
-}
-
-impl<'a, Message, Theme, Renderer> From<Lamp<Theme>> for Element<'a, Message, Theme, Renderer>
-where
-    Theme: Catalog + 'a,
-    Renderer: iced_widget::core::Renderer,
-{
-    fn from(lamp: Lamp<Theme>) -> Self {
-        Element::new(lamp)
     }
 }
 

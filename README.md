@@ -3,7 +3,7 @@
 A pixel-perfect retro UI toolkit for [iced]: instrument panels, technical
 drawings and pixel type, drawn in whole virtual pixels.
 
-It targets the [`0.14-pixel-scale` iced fork][fork], which lays an interface
+It targets the [`0.15-pixel-scale` iced fork][fork], which lays an interface
 out in virtual pixels and upscales it nearest-neighbour.
 
 - **Theme**: a small palette named for roles, five themes, and flat, square
@@ -92,4 +92,4 @@ The code is licensed under either of MIT or Apache-2.0, at your option. The
 fonts keep their own licences.
 
 [iced]: https://github.com/iced-rs/iced
-[fork]: https://github.com/jwric/iced/tree/0.14-pixel-scale
+[fork]: https://github.com/jwric/iced/tree/0.15-pixel-scale

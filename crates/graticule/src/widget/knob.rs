@@ -3,9 +3,9 @@ use std::ops::RangeInclusive;
 
 use iced_widget::core::layout::{self, Layout};
 use iced_widget::core::renderer;
-use iced_widget::core::widget::{Tree, tree};
-use iced_widget::core::{Clipboard, Shell, Widget, mouse, touch, window};
-use iced_widget::core::{Color, Element, Event, Length, Point, Rectangle, Size};
+use iced_widget::core::widget::{Meta, Tree, tree};
+use iced_widget::core::{Color, Event, Length, Point, Rectangle, Size};
+use iced_widget::core::{Shell, Widget, mouse, touch, window};
 
 use crate::draw::shape;
 use crate::px;
@@ -146,6 +146,8 @@ impl Notches {
     }
 }
 
+impl<Message, Theme> Meta for Knob<'_, Message, Theme> where Theme: Catalog {}
+
 impl<Message, Theme, Renderer> Widget<Message, Theme, Renderer> for Knob<'_, Message, Theme>
 where
     Theme: Catalog,
@@ -165,25 +167,19 @@ where
         Size::new(Length::Fixed(side), Length::Fixed(side))
     }
 
-    fn layout(
-        &mut self,
-        _tree: &mut Tree,
-        _renderer: &Renderer,
-        limits: &layout::Limits,
-    ) -> layout::Node {
+    fn layout(&mut self, tree: &mut Tree, _renderer: &Renderer, limits: &layout::Limits) {
         let side = f32::from(self.diameter);
 
-        layout::atomic(limits, side, side)
+        tree.size = layout::atomic(limits, side, side);
     }
 
     fn update(
         &mut self,
         tree: &mut Tree,
         event: &Event,
-        layout: Layout<'_>,
+        layout: Layout,
         cursor: mouse::Cursor,
         _renderer: &Renderer,
-        _clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
         _viewport: &Rectangle,
     ) {
@@ -249,7 +245,7 @@ where
         renderer: &mut Renderer,
         theme: &Theme,
         _style: &renderer::Style,
-        layout: Layout<'_>,
+        layout: Layout,
         _cursor: mouse::Cursor,
         _viewport: &Rectangle,
     ) {
@@ -293,7 +289,7 @@ where
     fn mouse_interaction(
         &self,
         tree: &Tree,
-        layout: Layout<'_>,
+        layout: Layout,
         cursor: mouse::Cursor,
         _viewport: &Rectangle,
         _renderer: &Renderer,
@@ -307,18 +303,6 @@ where
         } else {
             mouse::Interaction::None
         }
-    }
-}
-
-impl<'a, Message, Theme, Renderer> From<Knob<'a, Message, Theme>>
-    for Element<'a, Message, Theme, Renderer>
-where
-    Message: 'a,
-    Theme: Catalog + 'a,
-    Renderer: iced_widget::core::Renderer,
-{
-    fn from(knob: Knob<'a, Message, Theme>) -> Self {
-        Element::new(knob)
     }
 }
 

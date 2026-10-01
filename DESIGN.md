@@ -138,12 +138,13 @@ fonts/, tools/      font sources and the scripts that build the shipped fonts
 web/                host page and build script for the browser
 ```
 
-- The library depends on `iced_widget` alone, so windowing, renderers and
-  executors stay the application's choice. It pins the `0.14-pixel-scale` fork.
+- The library depends on `iced_widget` alone (and `iced_core`, to turn on
+  `crisp`), so windowing, renderers and executors stay the application's
+  choice. It pins the `0.15-pixel-scale` fork, which follows iced's master.
 - Widgets follow iced's catalog pattern: each has a `Style`, a `Catalog` and a
   `StyleFn` class, implemented for the graticule `Theme`.
-- Instruments are canvas programs with builder APIs that turn into `Element`s
-  filling their space unless sized.
+- Instruments are canvas programs with builder APIs, and widgets that draw
+  themselves as a canvas, filling their space unless sized.
 - The demo's `render` example draws every page in every theme headless to
   PNG; `--lab` draws the type lab once per candidate.
 

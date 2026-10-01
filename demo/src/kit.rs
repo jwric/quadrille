@@ -2,6 +2,7 @@
 use graticule::instrument::{self, Marker, Side};
 use graticule::widget::{self, bar, group, indicator, key, label, lamp, soft_key};
 use graticule::{Element, Face, Palette, Theme, px, style};
+use iced::Widget as _;
 use iced::widget::{column, container, progress_bar, row, slider, space, table};
 use iced::{Alignment, Color, Length};
 
@@ -144,26 +145,26 @@ impl Kit {
         let gauges = group(
             "BARS",
             column![
-                gauge("PLAIN", bar(0.0..=1.0, self.level).into()),
-                gauge("SEGMENT", bar(0.0..=1.0, self.level).segments(3).into()),
-                gauge("REDLINE", bar(0.0..=1.0, self.level).redline(0.7).into()),
+                gauge("PLAIN", bar(0.0..=1.0, self.level).boxed()),
+                gauge("SEGMENT", bar(0.0..=1.0, self.level).segments(3).boxed()),
+                gauge("REDLINE", bar(0.0..=1.0, self.level).redline(0.7).boxed()),
                 gauge(
                     "LIVE",
-                    bar(0.0..=1.0, self.level).style(widget::bar::live).into()
+                    bar(0.0..=1.0, self.level).style(widget::bar::live).boxed()
                 ),
                 gauge(
                     "INK",
-                    bar(0.0..=1.0, self.level).style(widget::bar::ink).into()
+                    bar(0.0..=1.0, self.level).style(widget::bar::ink).boxed()
                 ),
                 gauge(
                     "LEVEL",
                     slider(0.0..=1.0, self.level, Message::Level)
                         .step(0.01_f32)
-                        .into()
+                        .boxed()
                 ),
                 gauge(
                     "PROGRESS",
-                    progress_bar(0.0..=1.0, self.level).girth(6.0).into()
+                    progress_bar(0.0..=1.0, self.level).girth(6.0).boxed()
                 ),
             ]
             .spacing(px::TIGHT),
@@ -288,7 +289,7 @@ impl Kit {
             .width(Length::Fill)
             .height(Length::Fill)
             .style(style::container::ground)
-            .into()
+            .boxed()
     }
 }
 
@@ -322,14 +323,14 @@ fn tone<'a>(name: &'a str, style: fn(&Theme, bool) -> lamp::Style) -> Element<'a
     row![lamp::lamp(true).style(style), label(name)]
         .spacing(px::GAP)
         .align_y(Alignment::Center)
-        .into()
+        .boxed()
 }
 
 fn gauge<'a>(name: &'a str, widget: Element<'a, Message>) -> Element<'a, Message> {
     row![label(name).style(style::text::muted).width(54.0), widget]
         .spacing(px::GAP)
         .align_y(Alignment::Center)
-        .into()
+        .boxed()
 }
 
 /// A palette role: its name and how to read it.
@@ -368,7 +369,7 @@ fn palette<'a>() -> Element<'a, Message> {
         ]
         .spacing(px::GAP)
         .align_y(Alignment::Center)
-        .into()
+        .boxed()
     });
 
     let (first, second): (Vec<_>, Vec<_>) = swatches
@@ -385,7 +386,7 @@ fn palette<'a>() -> Element<'a, Message> {
         .spacing(px::WIDE),
     )
     .width(Length::Fill)
-    .into()
+    .boxed()
 }
 
 fn spacing<'a>() -> Element<'a, Message> {
@@ -410,10 +411,10 @@ fn spacing<'a>() -> Element<'a, Message> {
             ]
             .spacing(px::GAP)
             .align_y(Alignment::Center)
-            .into()
+            .boxed()
         }))
         .spacing(px::TIGHT),
     )
     .width(Length::Fill)
-    .into()
+    .boxed()
 }
