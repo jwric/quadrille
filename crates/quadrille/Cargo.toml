@@ -7,7 +7,7 @@ categories = ["gui"]
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
-include = ["src/**", "fonts/**", "README.md"]
+include = ["src/**", "fonts/**"]
 
 [dependencies]
 # The widget layer alone: renderers, windowing and executors are the

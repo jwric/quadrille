@@ -19,9 +19,10 @@ whole pixels by `tools/fonts/lab.py`; none of them is used by the library.
 | `portfolio-6x8.ttf`, `hp100lx-6x8.ttf` | Px437 Portfolio 6x8, PxPlus HP 100LX 6x8 | The Ultimate Oldschool PC Font Pack 2.2 (VileR, int10h.org) | CC BY-SA 4.0 |
 | `unscii-8.ttf` | unscii 8 | viznut.fi/unscii | Public domain |
 
-Licence texts are in `licenses/`.
+Licence texts are in `licenses/`; Fixed and unscii are public domain and have
+none.
 
-Before this repository is published, the candidates need another look:
-subsetting and renaming are modifications, so Terminus (a Reserved Font Name)
-and any other font whose licence restricts modified versions should be renamed
-or fetched unmodified at build time, and the CC BY-SA files keep their licence.
+Subsetting and renaming are modifications. Terminus declares a Reserved Font
+Name, "Terminus Font": the files here are named "Terminus 12", keep the
+author's copyright line, and no name record in them uses it. The other OFL
+fonts declare none. The CC BY-SA files keep their licence.

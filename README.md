@@ -74,13 +74,17 @@ scope, a strip chart and a heat map, and a technical drawing, all the
 console's own. Two pages show the toolkit itself: every widget in every
 state, and a type lab comparing candidate fonts.
 
+It needs a recent stable Rust (the crates use edition 2024, so 1.85 or newer)
+and a Wayland or X11 session for the window; the first build fetches the
+[iced fork][fork] from GitHub.
+
 ```sh
 cargo run -p quadrille-demo --release
 ```
 
 F1–F5 choose the page and F6 changes the theme.
 
-In a browser:
+In a browser (this needs `wasm-pack`):
 
 ```sh
 web/build.sh
@@ -97,7 +101,8 @@ cargo run -p quadrille-demo --example render -- target/lab 42 --lab
 ## Fonts
 
 Departure Mono is by Helena Zhang and licensed under the SIL Open Font License
-1.1. Departure Mono Tight is derived from it by `tools/fonts/build.sh`. The
+1.1. Departure Mono Tight is derived from it by `tools/fonts/build.sh` (python3 with
+fontTools). The
 type lab's candidate fonts, their sources and licences are listed in
 `demo/assets/fonts/lab/SOURCES.md`.
 
